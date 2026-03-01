@@ -523,6 +523,28 @@
               </div>
 
               <div>
+                <label class="label">الفئة</label>
+
+                <input id="flight_class" type="hidden" value="">
+
+                <div id="classSelect" class="select-wrap">
+                  <button id="class_btn" type="button" class="inp select-btn" aria-haspopup="listbox" aria-expanded="false">
+                    <span id="class_btn_text">اختر الفئة...</span>
+                    <span class="left-icons">
+                      <span class="plane">✈</span>
+                      <span class="chev"></span>
+                    </span>
+                  </button>
+
+                  <div id="class_menu" class="select-menu hidden" role="listbox" aria-label="قائمة الفئة">
+                    <input id="class_search" class="inp select-search" type="text" placeholder="بحث سريع...">
+                    <div id="class_list" class="select-list"></div>
+                    <div id="class_empty" class="select-empty hidden">لا يوجد نتائج</div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
                 <label class="label">نوع الطائرة</label>
 
                 <input id="aircraft_type" type="hidden" value="">
@@ -653,6 +675,22 @@
                   <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('sadkoub_staff')">+ إضافة</button>
                 </div>
                 <div id="sadkoub_staff" class="space-y-2"></div>
+              </div>
+
+              <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[color:var(--gold)] font-bold">عمال آليات</div>
+                  <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('vehicles_staff')">+ إضافة</button>
+                </div>
+                <div id="vehicles_staff" class="space-y-2"></div>
+              </div>
+
+              <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[color:var(--gold)] font-bold">عمال ترتيبات</div>
+                  <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('arrangements_staff')">+ إضافة</button>
+                </div>
+                <div id="arrangements_staff" class="space-y-2"></div>
               </div>
             </div>
 
@@ -876,7 +914,8 @@
     function getVerticalStaffRows(d) {
       const maxLen = Math.max(
         d.movement_staff.length, d.loading_staff.length, d.food_staff.length,
-        d.maintenance_staff.length, d.catering_staff.length, d.sadkoub_staff.length
+        d.maintenance_staff.length, d.catering_staff.length, d.sadkoub_staff.length,
+        d.vehicles_staff.length, d.arrangements_staff.length
       );
       const rows = [];
       for(let i=0; i<maxLen; i++){
@@ -886,7 +925,9 @@
           food: d.food_staff[i] || "",
           maintenance: d.maintenance_staff[i] || "",
           catering: d.catering_staff[i] || "",
-          sadkoub: d.sadkoub_staff[i] || ""
+          sadkoub: d.sadkoub_staff[i] || "",
+          vehicles: d.vehicles_staff[i] || "",
+          arrangements: d.arrangements_staff[i] || ""
         });
       }
       return rows;
@@ -999,6 +1040,7 @@
     function gatherData(){
       return {
         rep_writer: document.getElementById('rep_writer').value.trim(),
+        flight_class: document.getElementById('flight_class').value.trim(),
         aircraft_type: document.getElementById('aircraft_type').value.trim(),
         arr_date: document.getElementById('arr_date').value,
         arr_time: document.getElementById('arr_time').value,
@@ -1019,6 +1061,8 @@
         maintenance_staff: getPeople('maintenance_staff'),
         catering_staff: getPeople('catering_staff'),
         sadkoub_staff: getPeople('sadkoub_staff'),
+        vehicles_staff: getPeople('vehicles_staff'),
+        arrangements_staff: getPeople('arrangements_staff'),
 
         found_items: document.getElementById('found_items').value.trim(),
         receiver_name: document.getElementById('receiver_name').value.trim(),
@@ -1125,6 +1169,87 @@
       closeAircraftMenu();
     }
 
+    const CLASS_OPTIONS = ["A","B"];
+
+    function setClassType(val){
+      const hidden = document.getElementById('flight_class');
+      const btnText = document.getElementById('class_btn_text');
+      hidden.value = (val || "").trim();
+      btnText.textContent = hidden.value ? hidden.value : "اختر الفئة...";
+      renderClassList(document.getElementById('class_search').value || "");
+    }
+
+    function renderClassList(filterText){
+      const list = document.getElementById('class_list');
+      const empty = document.getElementById('class_empty');
+      const selected = (document.getElementById('flight_class').value || "").trim();
+
+      const f = (filterText || "").trim().toLowerCase();
+      const items = CLASS_OPTIONS.filter(x => x.toLowerCase().includes(f));
+
+      list.innerHTML = "";
+      if(items.length === 0){
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      items.forEach(name => {
+        const b = document.createElement('button');
+        b.type = "button";
+        b.className = "select-item" + (name === selected ? " selected" : "");
+        b.setAttribute("role", "option");
+        b.setAttribute("aria-selected", name === selected ? "true" : "false");
+        b.dataset.value = name;
+        b.innerHTML = `<span>${escapeHtml(name)}</span><span class="tick">✓</span>`;
+        b.onclick = () => {
+          setClassType(name);
+          closeClassMenu();
+        };
+        list.appendChild(b);
+      });
+    }
+
+    function openClassMenu(){
+      const wrap = document.getElementById('classSelect');
+      const menu = document.getElementById('class_menu');
+      const btn = document.getElementById('class_btn');
+      wrap.classList.add('open');
+      menu.classList.remove('hidden');
+      btn.setAttribute("aria-expanded", "true");
+      document.getElementById('class_search').focus();
+      renderClassList(document.getElementById('class_search').value || "");
+    }
+
+    function closeClassMenu(){
+      const wrap = document.getElementById('classSelect');
+      const menu = document.getElementById('class_menu');
+      const btn = document.getElementById('class_btn');
+      wrap.classList.remove('open');
+      menu.classList.add('hidden');
+      btn.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleClassMenu(){
+      const menu = document.getElementById('class_menu');
+      if(menu.classList.contains('hidden')) openClassMenu();
+      else closeClassMenu();
+    }
+
+    function initClassSelect(){
+      const btn = document.getElementById('class_btn');
+      const search = document.getElementById('class_search');
+      btn.addEventListener('click', toggleClassMenu);
+      search.addEventListener('input', (e) => { renderClassList(e.target.value || ""); });
+      document.addEventListener('keydown', (e) => { if(e.key === "Escape") closeClassMenu(); });
+      document.addEventListener('click', (e) => {
+        const wrap = document.getElementById('classSelect');
+        if(!wrap.contains(e.target)) closeClassMenu();
+      });
+      setClassType("");
+      closeClassMenu();
+    }
+
     function safeText(x){ return (x && x.toString().trim()) ? x.toString().trim() : "—"; }
 
     function buildPdfTemplateHtml(d){
@@ -1153,11 +1278,15 @@
                 <table class="pdfTable">
                   <tr>
                     <td class="k" style="width:20%;">نوع الطائرة</td><td class="v" style="width:30%;">${escapeHtml(safeText(d.aircraft_type))}</td>
-                    <td class="k" style="width:20%;">عدد الركاب</td><td class="v" style="width:30%;">${escapeHtml(d.pax_count)}</td>
+                    <td class="k" style="width:20%;">الفئة</td><td class="v" style="width:30%;">${escapeHtml(safeText(d.flight_class))}</td>
                   </tr>
                   <tr>
+                    <td class="k">عدد الركاب</td><td class="v">${escapeHtml(d.pax_count)}</td>
                     <td class="k">وفود</td><td class="v">${escapeHtml(d.delegations_count)}</td>
+                  </tr>
+                  <tr>
                     <td class="k">ركاب VIP</td><td class="v">${escapeHtml(d.vip_pax)}</td>
+                    <td class="k">—</td><td class="v">—</td>
                   </tr>
                   <tr>
                     <td class="k">توقيت الوصول</td><td class="v" style="direction:ltr; text-align:right;">${escapeHtml(safeText(d.arr_time))} / ${escapeHtml(safeText(d.arr_date))}</td>
@@ -1176,14 +1305,16 @@
               <div class="pdfCardBody">
                 <table class="pdfTable" style="text-align:center;">
                   <tr style="background:#f8fafc;">
-                    <td class="k" style="width:16.6%;">موظف الحركة</td>
-                    <td class="k" style="width:16.6%;">عمال التحميل</td>
-                    <td class="k" style="width:16.6%;">ضيافة جوية</td>
-                    <td class="k" style="width:16.6%;">عمال الصيانة</td>
-                    <td class="k" style="width:16.6%;">عمال الكاترينغ</td>
-                    <td class="k" style="width:16.6%;">عمال السادكوب</td>
+                    <td class="k" style="width:12.5%;">موظف الحركة</td>
+                    <td class="k" style="width:12.5%;">عمال التحميل</td>
+                    <td class="k" style="width:12.5%;">ضيافة جوية</td>
+                    <td class="k" style="width:12.5%;">عمال الصيانة</td>
+                    <td class="k" style="width:12.5%;">عمال الكاترينغ</td>
+                    <td class="k" style="width:12.5%;">عمال السادكوب</td>
+                    <td class="k" style="width:12.5%;">عمال آليات</td>
+                    <td class="k" style="width:12.5%;">عمال ترتيبات</td>
                   </tr>
-                  ${staffRows.length === 0 ? `<tr><td colspan="6" class="v">—</td></tr>` : staffRows.map(r => `
+                  ${staffRows.length === 0 ? `<tr><td colspan="8" class="v">—</td></tr>` : staffRows.map(r => `
                     <tr>
                       <td class="v" style="font-size:14px;">${escapeHtml(r.movement)}</td>
                       <td class="v" style="font-size:14px;">${escapeHtml(r.loading)}</td>
@@ -1191,6 +1322,8 @@
                       <td class="v" style="font-size:14px;">${escapeHtml(r.maintenance)}</td>
                       <td class="v" style="font-size:14px;">${escapeHtml(r.catering)}</td>
                       <td class="v" style="font-size:14px;">${escapeHtml(r.sadkoub)}</td>
+                      <td class="v" style="font-size:14px;">${escapeHtml(r.vehicles)}</td>
+                      <td class="v" style="font-size:14px;">${escapeHtml(r.arrangements)}</td>
                     </tr>
                   `).join('')}
                 </table>
@@ -1420,47 +1553,51 @@
           rows: [
             rowTitle("بيانات الرحلة", 4),
             row2("كاتب التقرير", d.rep_writer || "—", "نوع الطائرة", d.aircraft_type || "—"),
+            row2("الفئة", d.flight_class || "—", "عدد الركاب", d.pax_count.toString()),
             row2("توقيت الوصول", `${d.arr_time || "—"} / ${d.arr_date || "—"}`, "توقيت المغادرة", `${d.dep_time || "—"} / ${d.dep_date || "—"}`),
             row2("رقم الفنكر", d.stand_num || "—", "رقم البوابة", d.gate_num || "—"),
             row2("رحلة قدوم", d.flight_arr || "—", "رحلة مغادرة", d.flight_dep || "—"),
-            row2("عدد الركاب", d.pax_count.toString(), "وفود", d.delegations_count.toString()),
-            rowWide("ركاب VIP", d.vip_pax.toString()),
+            row2("وفود", d.delegations_count.toString(), "ركاب VIP", d.vip_pax.toString()),
           ],
         });
 
-        // Staff Table (Vertical format 6 columns)
+        // Staff Table (Vertical format 8 columns)
         const staffHeaderRow = new TableRow({
           children: [
-            cell([p([run("موظف الحركة", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 16.6, fill: "F6F2E8" }),
-            cell([p([run("عمال التحميل", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 16.6, fill: "F6F2E8" }),
-            cell([p([run("ضيافة جوية", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 16.6, fill: "F6F2E8" }),
-            cell([p([run("عمال الصيانة", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 16.6, fill: "F6F2E8" }),
-            cell([p([run("عمال الكاترينغ", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 16.6, fill: "F6F2E8" }),
-            cell([p([run("عمال السادكوب", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 16.6, fill: "F6F2E8" }),
+            cell([p([run("موظف الحركة", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
+            cell([p([run("عمال التحميل", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
+            cell([p([run("ضيافة جوية", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
+            cell([p([run("عمال الصيانة", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
+            cell([p([run("عمال الكاترينغ", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
+            cell([p([run("عمال السادكوب", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
+            cell([p([run("عمال آليات", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
+            cell([p([run("عمال ترتيبات", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
           ]
         });
 
         const vRows = getVerticalStaffRows(d);
         const staffDataRows = vRows.map(r => new TableRow({
           children: [
-            cell([p([run(r.movement, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 16.6 }),
-            cell([p([run(r.loading, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 16.6 }),
-            cell([p([run(r.food, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 16.6 }),
-            cell([p([run(r.maintenance, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 16.6 }),
-            cell([p([run(r.catering, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 16.6 }),
-            cell([p([run(r.sadkoub, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 16.6 }),
+            cell([p([run(r.movement, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
+            cell([p([run(r.loading, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
+            cell([p([run(r.food, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
+            cell([p([run(r.maintenance, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
+            cell([p([run(r.catering, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
+            cell([p([run(r.sadkoub, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
+            cell([p([run(r.vehicles, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
+            cell([p([run(r.arrangements, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
           ]
         }));
 
         if(staffDataRows.length === 0){
-           staffDataRows.push(new TableRow({ children: [cell([p([run("—")], {align: AlignmentType.CENTER})], {colSpan: 6})] }));
+           staffDataRows.push(new TableRow({ children: [cell([p([run("—")], {align: AlignmentType.CENTER})], {colSpan: 8})] }));
         }
 
         const staffTable = new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
           borders,
           rows: [
-            rowTitle("الطواقم الموظفين", 6),
+            rowTitle("الطواقم الموظفين", 8),
             staffHeaderRow,
             ...staffDataRows
           ]
@@ -1542,7 +1679,7 @@
 
     function resetForm(){
       const idsToClear = [
-        'rep_writer','aircraft_type','arr_time','arr_date','dep_time','dep_date',
+        'rep_writer','aircraft_type','flight_class','arr_time','arr_date','dep_time','dep_date',
         'stand_num','gate_num','flight_arr','flight_dep','pax_count',
         'delegations_count','vip_pax','found_items','receiver_name',
         'light_duration','light_stand','notes',
@@ -1551,17 +1688,19 @@
       idsToClear.forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
 
       setAircraftType("");
+      setClassType("");
 
       [
         'svc_lift','svc_catering1','svc_compressor','svc_battery','svc_salt_water','svc_fresh_water',
         'svc_fire','svc_sad_cup','svc_ac','svc_pushback','svc_loader'
       ].forEach(id => { const el=document.getElementById(id); if(el) el.checked=false; });
 
-      ['movement_staff','loading_staff','food_staff','maintenance_staff','catering_staff','sadkoub_staff']
+      ['movement_staff','loading_staff','food_staff','maintenance_staff','catering_staff','sadkoub_staff','vehicles_staff','arrangements_staff']
         .forEach(cid => document.getElementById(cid).innerHTML='');
 
       addPerson('movement_staff'); addPerson('loading_staff'); addPerson('food_staff');
       addPerson('maintenance_staff'); addPerson('catering_staff'); addPerson('sadkoub_staff');
+      addPerson('vehicles_staff'); addPerson('arrangements_staff');
 
       setTodayDefaults();
       applyServiceVisibility();
@@ -1570,10 +1709,12 @@
     window.onload = function(){
       setTodayDefaults();
       initAircraftSelect();
+      initClassSelect();
       applyServiceVisibility();
 
       addPerson('movement_staff'); addPerson('loading_staff'); addPerson('food_staff');
       addPerson('maintenance_staff'); addPerson('catering_staff'); addPerson('sadkoub_staff');
+      addPerson('vehicles_staff'); addPerson('arrangements_staff');
     };
   </script>
 </body>
