@@ -483,6 +483,14 @@
       background: #f8fafc;
       margin-top: 8px;
     }
+
+    /* === Fix mixed RTL/LTR (letters+numbers+symbols+spaces) in PDF canvas === */
+    .pdfAutoFix{
+      direction: auto !important;
+      unicode-bidi: isolate !important;
+      white-space: pre !important; /* يحافظ على الفراغات مثل "XY 45" */
+      display: inline-block !important;
+    }
   </style>
 </head>
 
@@ -1254,7 +1262,7 @@
 
     function buildPdfTemplateHtml(d){
       const createdStr = new Date().toLocaleString('ar');
-      const allChipsHtml = getCombinedChips(d).map(s => `<span class="pdfChip">${escapeHtml(s)}</span>`).join("");
+      const allChipsHtml = getCombinedChips(d).map(s => `<span class="pdfChip"><span class="pdfAutoFix" dir="auto">${escapeHtml(s)}</span></span>`).join("");
       const staffRows = getVerticalStaffRows(d);
 
       return `
@@ -1265,10 +1273,10 @@
               <div>
                 <div style="font-weight:900; font-size:14px; opacity:.92; margin-bottom:4px;">الجمهورية العربية السورية</div>
                 <h1>تقرير ساحة الطيران - خدمة الطائرة</h1>
-                <div class="sub">تاريخ الإنشاء: ${escapeHtml(createdStr)}</div>
+                <div class="sub">تاريخ الإنشاء: <span class="pdfAutoFix" dir="auto">${escapeHtml(createdStr)}</span></div>
               </div>
             </div>
-            <div class="pdfBadge">كاتب التقرير ${escapeHtml(safeText(d.rep_writer))}</div>
+            <div class="pdfBadge">كاتب التقرير <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.rep_writer))}</span></div>
           </div>
 
           <div class="pdfGrid">
@@ -1277,24 +1285,26 @@
               <div class="pdfCardBody">
                 <table class="pdfTable">
                   <tr>
-                    <td class="k" style="width:20%;">نوع الطائرة</td><td class="v" style="width:30%;">${escapeHtml(safeText(d.aircraft_type))}</td>
-                    <td class="k" style="width:20%;">الفئة</td><td class="v" style="width:30%;">${escapeHtml(safeText(d.flight_class))}</td>
+                    <td class="k" style="width:20%;">نوع الطائرة</td><td class="v" style="width:30%;"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.aircraft_type))}</span></td>
+                    <td class="k" style="width:20%;">الفئة</td><td class="v" style="width:30%;"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.flight_class))}</span></td>
                   </tr>
                   <tr>
-                    <td class="k">عدد الركاب</td><td class="v">${escapeHtml(d.pax_count)}</td>
-                    <td class="k">وفود</td><td class="v">${escapeHtml(d.delegations_count)}</td>
+                    <td class="k">عدد الركاب</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.pax_count)}</span></td>
+                    <td class="k">وفود</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.delegations_count)}</span></td>
                   </tr>
                   <tr>
-                    <td class="k">ركاب VIP</td><td class="v">${escapeHtml(d.vip_pax)}</td>
+                    <td class="k">ركاب VIP</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.vip_pax)}</span></td>
                     <td class="k">—</td><td class="v">—</td>
                   </tr>
                   <tr>
-                    <td class="k">توقيت الوصول</td><td class="v" style="direction:ltr; text-align:right;">${escapeHtml(safeText(d.arr_time))} / ${escapeHtml(safeText(d.arr_date))}</td>
-                    <td class="k">توقيت المغادرة</td><td class="v" style="direction:ltr; text-align:right;">${escapeHtml(safeText(d.dep_time))} / ${escapeHtml(safeText(d.dep_date))}</td>
+                    <td class="k">توقيت الوصول</td><td class="v" style="direction:ltr; text-align:right;"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.arr_time))}</span> / <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.arr_date))}</span></td>
+                    <td class="k">توقيت المغادرة</td><td class="v" style="direction:ltr; text-align:right;"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.dep_time))}</span> / <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.dep_date))}</span></td>
                   </tr>
                   <tr>
-                    <td class="k">مهبط الطائرة</td><td class="v">فنكر ${escapeHtml(safeText(d.stand_num))} — بوابة ${escapeHtml(safeText(d.gate_num))}</td>
-                    <td class="k">رقم الرحلة</td><td class="v">قدوم ${escapeHtml(safeText(d.flight_arr))} — مغادرة ${escapeHtml(safeText(d.flight_dep))}</td>
+                    <td class="k">مهبط الطائرة</td>
+                    <td class="v">فنكر <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.stand_num))}</span> — بوابة <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.gate_num))}</span></td>
+                    <td class="k">رقم الرحلة</td>
+                    <td class="v">قدوم <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.flight_arr))}</span> — مغادرة <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.flight_dep))}</span></td>
                   </tr>
                 </table>
               </div>
@@ -1316,14 +1326,14 @@
                   </tr>
                   ${staffRows.length === 0 ? `<tr><td colspan="8" class="v">—</td></tr>` : staffRows.map(r => `
                     <tr>
-                      <td class="v" style="font-size:14px;">${escapeHtml(r.movement)}</td>
-                      <td class="v" style="font-size:14px;">${escapeHtml(r.loading)}</td>
-                      <td class="v" style="font-size:14px;">${escapeHtml(r.food)}</td>
-                      <td class="v" style="font-size:14px;">${escapeHtml(r.maintenance)}</td>
-                      <td class="v" style="font-size:14px;">${escapeHtml(r.catering)}</td>
-                      <td class="v" style="font-size:14px;">${escapeHtml(r.sadkoub)}</td>
-                      <td class="v" style="font-size:14px;">${escapeHtml(r.vehicles)}</td>
-                      <td class="v" style="font-size:14px;">${escapeHtml(r.arrangements)}</td>
+                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.movement)}</span></td>
+                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.loading)}</span></td>
+                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.food)}</span></td>
+                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.maintenance)}</span></td>
+                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.catering)}</span></td>
+                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.sadkoub)}</span></td>
+                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.vehicles)}</span></td>
+                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.arrangements)}</span></td>
                     </tr>
                   `).join('')}
                 </table>
@@ -1331,12 +1341,12 @@
                 <div style="margin-top:20px;">
                   <div style="margin-bottom:14px;">
                     <div style="font-weight:900; color:#0f172a; font-size:14px; margin-bottom:6px;">المفقودات التي وُجدت على الطائرة</div>
-                    <div class="pdfNotes">${escapeHtml(safeText(d.found_items))}</div>
+                    <div class="pdfNotes"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.found_items))}</span></div>
                   </div>
                   <table class="pdfTable">
                     <tr>
                       <td class="k" style="width:20%;">اسم المستلم</td>
-                      <td class="v" style="width:80%;">${escapeHtml(safeText(d.receiver_name))}</td>
+                      <td class="v" style="width:80%;"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.receiver_name))}</span></td>
                     </tr>
                   </table>
                 </div>
@@ -1349,7 +1359,7 @@
                 <div class="pdfChips">${allChipsHtml}</div>
                 <div style="margin-top:14px;">
                   <div style="font-weight:900; color:#0f172a; font-size:14px; margin-bottom:6px;">ملاحظات</div>
-                  <div class="pdfNotes">${escapeHtml(safeText(d.notes))}</div>
+                  <div class="pdfNotes"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.notes))}</span></div>
                 </div>
               </div>
             </div>
