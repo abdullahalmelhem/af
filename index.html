@@ -1409,38 +1409,39 @@
           pagebreak: { mode: ['css', 'legacy'] } 
         };
 
-        // تحويل الـ PDF إلى ملف جاهز والمشاركة فوراً بدلاً من التحميل المباشر
-        await html2pdf().set(opt).from(pdfPage).toPdf().get('pdf').then(async function (pdfObj) {
-          const pdfBlob = pdfObj.output('blob');
-          
-          // تأكيد نوع الملف كـ PDF ليعمل على الواتساب وتليجرام
-          const fileForShare = new File([pdfBlob], fileName, { type: 'application/pdf' });
+        // تحويل الـ PDF إلى Blob حقيقي بصيغة application/pdf ثم مشاركته
+        const worker = html2pdf().set(opt).from(pdfPage).toPdf();
+        const rawBlob = await worker.outputPdf('blob');
 
-          if (navigator.canShare && navigator.canShare({ files: [fileForShare] })) {
-            try {
-              await navigator.share({
-                title: 'تقرير ساحة الطيران',
-                text: 'مرفق تقرير ساحة الطيران بصيغة PDF.',
-                files: [fileForShare]
-              });
-            } catch (error) {
-              if (error.name !== 'AbortError') {
-                 // إذا فشلت المشاركة لسبب آخر غير إغلاق النافذة، قم بالتنزيل
-                 saveAs(pdfBlob, fileName);
-              }
-            }
-          } else {
-            // إذا كان الجهاز لا يدعم المشاركة، قم بالتنزيل
-            saveAs(pdfBlob, fileName);
-          }
+        // إجبار النوع ليكون PDF بشكل صريح حتى لا يتحول إلى BIN في واتساب
+        const pdfBlob = new Blob([rawBlob], { type: 'application/pdf' });
+        const fileForShare = new File([pdfBlob], fileName, {
+          type: 'application/pdf',
+          lastModified: Date.now()
         });
+
+        if (navigator.canShare && navigator.canShare({ files: [fileForShare] })) {
+          try {
+            await navigator.share({
+              title: 'تقرير ساحة الطيران',
+              text: 'مرفق تقرير ساحة الطيران بصيغة PDF.',
+              files: [fileForShare]
+            });
+          } catch (error) {
+            if (error.name !== 'AbortError') {
+              saveAs(pdfBlob, fileName);
+            }
+          }
+        } else {
+          saveAs(pdfBlob, fileName);
+        }
 
       }catch(e){
         alert("حدث خطأ أثناء تصدير PDF: " + (e?.message || e));
       }finally{
         btn.innerText = old;
         btn.disabled = false;
-        pdfPage.innerHTML = ""; // تنظيف الحاوية بعد الانتهاء
+        document.getElementById('pdfPage').innerHTML = ""; // تنظيف الحاوية بعد الانتهاء
       }
     }
 
