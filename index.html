@@ -918,7 +918,7 @@
       return inputs.map(i => i.value.trim()).filter(Boolean);
     }
 
-    // دالة لاستخراج الأسماء المضافة بشكل جدول شاقولي/عمودي
+    // دالة لاستخراج الأسماء المضافة بشكل جدول شاقولي/عمودي (تم الإبقاء عليها كما طلبت دون حذف)
     function getVerticalStaffRows(d) {
       const maxLen = Math.max(
         d.movement_staff.length, d.loading_staff.length, d.food_staff.length,
@@ -1263,7 +1263,7 @@
     function buildPdfTemplateHtml(d){
       const createdStr = new Date().toLocaleString('ar');
       const allChipsHtml = getCombinedChips(d).map(s => `<span class="pdfChip"><span class="pdfAutoFix" dir="auto">${escapeHtml(s)}</span></span>`).join("");
-      const staffRows = getVerticalStaffRows(d);
+      const staffRows = getVerticalStaffRows(d); // تم الإبقاء على الدالة لعدم حذف أي شيء
 
       return `
         <div class="pdfPage">
@@ -1313,31 +1313,32 @@
             <div class="pdfCard">
               <div class="pdfCardTitle">الطواقم الموظفين</div>
               <div class="pdfCardBody">
-                <table class="pdfTable" style="text-align:center;">
-                  <tr style="background:#f8fafc;">
-                    <td class="k" style="width:12.5%;">موظف الحركة</td>
-                    <td class="k" style="width:12.5%;">عمال التحميل</td>
-                    <td class="k" style="width:12.5%;">ضيافة جوية</td>
-                    <td class="k" style="width:12.5%;">عمال الصيانة</td>
-                    <td class="k" style="width:12.5%;">عمال الكاترينغ</td>
-                    <td class="k" style="width:12.5%;">عمال السادكوب</td>
-                    <td class="k" style="width:12.5%;">عمال آليات</td>
-                    <td class="k" style="width:12.5%;">عمال ترتيبات</td>
+                <table class="pdfTable">
+                  <tr>
+                    <td class="k" style="width:25%;">موظف الحركة</td><td class="v" style="width:75%;"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.movement_staff.join(" ، ") || "—")}</span></td>
                   </tr>
-                  ${staffRows.length === 0 ? `<tr><td colspan="8" class="v">—</td></tr>` : staffRows.map(r => `
-                    <tr>
-                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.movement)}</span></td>
-                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.loading)}</span></td>
-                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.food)}</span></td>
-                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.maintenance)}</span></td>
-                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.catering)}</span></td>
-                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.sadkoub)}</span></td>
-                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.vehicles)}</span></td>
-                      <td class="v" style="font-size:14px;"><span class="pdfAutoFix" dir="auto">${escapeHtml(r.arrangements)}</span></td>
-                    </tr>
-                  `).join('')}
+                  <tr>
+                    <td class="k">عمال التحميل</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.loading_staff.join(" ، ") || "—")}</span></td>
+                  </tr>
+                  <tr>
+                    <td class="k">ضيافة جوية</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.food_staff.join(" ، ") || "—")}</span></td>
+                  </tr>
+                  <tr>
+                    <td class="k">عمال الصيانة</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.maintenance_staff.join(" ، ") || "—")}</span></td>
+                  </tr>
+                  <tr>
+                    <td class="k">عمال الكاترينغ</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.catering_staff.join(" ، ") || "—")}</span></td>
+                  </tr>
+                  <tr>
+                    <td class="k">عمال السادكوب</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.sadkoub_staff.join(" ، ") || "—")}</span></td>
+                  </tr>
+                  <tr>
+                    <td class="k">عمال آليات</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.vehicles_staff.join(" ، ") || "—")}</span></td>
+                  </tr>
+                  <tr>
+                    <td class="k">عمال ترتيبات</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.arrangements_staff.join(" ، ") || "—")}</span></td>
+                  </tr>
                 </table>
-
                 <div style="margin-top:20px;">
                   <div style="margin-bottom:14px;">
                     <div style="font-weight:900; color:#0f172a; font-size:14px; margin-bottom:6px;">المفقودات التي وُجدت على الطائرة</div>
@@ -1572,45 +1573,27 @@
           ],
         });
 
-        // Staff Table (Vertical format 8 columns)
-        const staffHeaderRow = new TableRow({
+        // التعديل المطلوب: جدول الموظفين للورد (أقسام على اليمين وأسماء مجمعة على اليسار)
+        const staffRow = (title, names) => new TableRow({
           children: [
-            cell([p([run("موظف الحركة", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
-            cell([p([run("عمال التحميل", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
-            cell([p([run("ضيافة جوية", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
-            cell([p([run("عمال الصيانة", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
-            cell([p([run("عمال الكاترينغ", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
-            cell([p([run("عمال السادكوب", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
-            cell([p([run("عمال آليات", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
-            cell([p([run("عمال ترتيبات", {bold:true, color:"0B2F2A"})], {align: AlignmentType.CENTER})], { width: 12.5, fill: "F6F2E8" }),
+            cell([p([run(title, {bold:true, color:"0B2F2A"})])], { width: 25, fill: "F6F2E8" }),
+            cell([p([run(names.length > 0 ? names.join(" ، ") : "—", {color:"111111"})])], { width: 75 })
           ]
         });
-
-        const vRows = getVerticalStaffRows(d);
-        const staffDataRows = vRows.map(r => new TableRow({
-          children: [
-            cell([p([run(r.movement, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
-            cell([p([run(r.loading, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
-            cell([p([run(r.food, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
-            cell([p([run(r.maintenance, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
-            cell([p([run(r.catering, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
-            cell([p([run(r.sadkoub, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
-            cell([p([run(r.vehicles, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
-            cell([p([run(r.arrangements, {color:"111111"})], {align: AlignmentType.CENTER})], { width: 12.5 }),
-          ]
-        }));
-
-        if(staffDataRows.length === 0){
-           staffDataRows.push(new TableRow({ children: [cell([p([run("—")], {align: AlignmentType.CENTER})], {colSpan: 8})] }));
-        }
 
         const staffTable = new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
           borders,
           rows: [
-            rowTitle("الطواقم الموظفين", 8),
-            staffHeaderRow,
-            ...staffDataRows
+            rowTitle("الطواقم الموظفين", 2),
+            staffRow("موظف الحركة", d.movement_staff),
+            staffRow("عمال التحميل", d.loading_staff),
+            staffRow("ضيافة جوية", d.food_staff),
+            staffRow("عمال الصيانة", d.maintenance_staff),
+            staffRow("عمال الكاترينغ", d.catering_staff),
+            staffRow("عمال السادكوب", d.sadkoub_staff),
+            staffRow("عمال آليات", d.vehicles_staff),
+            staffRow("عمال ترتيبات", d.arrangements_staff)
           ]
         });
 
