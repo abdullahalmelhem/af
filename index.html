@@ -918,7 +918,7 @@
       return inputs.map(i => i.value.trim()).filter(Boolean);
     }
 
-    // دالة لاستخراج الأسماء المضافة بشكل جدول شاقولي/عمودي (تم الإبقاء عليها كما طلبت دون حذف)
+    // دالة لاستخراج الأسماء المضافة بشكل جدول شاقولي/عمودي (بناءً على طلبك السابق)
     function getVerticalStaffRows(d) {
       const maxLen = Math.max(
         d.movement_staff.length, d.loading_staff.length, d.food_staff.length,
@@ -1260,10 +1260,16 @@
 
     function safeText(x){ return (x && x.toString().trim()) ? x.toString().trim() : "—"; }
 
+    // الدالة المسؤولة عن تنسيق الأسماء لملف الـ PDF وتفادي مشكلة العكس في html2canvas
+    function formatNamesPdf(arr) {
+      if (!arr || arr.length === 0) return "—";
+      return arr.map(n => `<span class="pdfAutoFix" dir="rtl">${escapeHtml(n)}</span>`).join(' ، ');
+    }
+
     function buildPdfTemplateHtml(d){
       const createdStr = new Date().toLocaleString('ar');
       const allChipsHtml = getCombinedChips(d).map(s => `<span class="pdfChip"><span class="pdfAutoFix" dir="auto">${escapeHtml(s)}</span></span>`).join("");
-      const staffRows = getVerticalStaffRows(d); // تم الإبقاء على الدالة لعدم حذف أي شيء
+      const staffRows = getVerticalStaffRows(d);
 
       return `
         <div class="pdfPage">
@@ -1315,28 +1321,28 @@
               <div class="pdfCardBody">
                 <table class="pdfTable">
                   <tr>
-                    <td class="k" style="width:25%;">موظف الحركة</td><td class="v" style="width:75%;"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.movement_staff.join(" ، ") || "—")}</span></td>
+                    <td class="k" style="width:25%;">موظف الحركة</td><td class="v" style="width:75%;">${formatNamesPdf(d.movement_staff)}</td>
                   </tr>
                   <tr>
-                    <td class="k">عمال التحميل</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.loading_staff.join(" ، ") || "—")}</span></td>
+                    <td class="k">عمال التحميل</td><td class="v">${formatNamesPdf(d.loading_staff)}</td>
                   </tr>
                   <tr>
-                    <td class="k">ضيافة جوية</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.food_staff.join(" ، ") || "—")}</span></td>
+                    <td class="k">ضيافة جوية</td><td class="v">${formatNamesPdf(d.food_staff)}</td>
                   </tr>
                   <tr>
-                    <td class="k">عمال الصيانة</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.maintenance_staff.join(" ، ") || "—")}</span></td>
+                    <td class="k">عمال الصيانة</td><td class="v">${formatNamesPdf(d.maintenance_staff)}</td>
                   </tr>
                   <tr>
-                    <td class="k">عمال الكاترينغ</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.catering_staff.join(" ، ") || "—")}</span></td>
+                    <td class="k">عمال الكاترينغ</td><td class="v">${formatNamesPdf(d.catering_staff)}</td>
                   </tr>
                   <tr>
-                    <td class="k">عمال السادكوب</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.sadkoub_staff.join(" ، ") || "—")}</span></td>
+                    <td class="k">عمال السادكوب</td><td class="v">${formatNamesPdf(d.sadkoub_staff)}</td>
                   </tr>
                   <tr>
-                    <td class="k">عمال آليات</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.vehicles_staff.join(" ، ") || "—")}</span></td>
+                    <td class="k">عمال آليات</td><td class="v">${formatNamesPdf(d.vehicles_staff)}</td>
                   </tr>
                   <tr>
-                    <td class="k">عمال ترتيبات</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.arrangements_staff.join(" ، ") || "—")}</span></td>
+                    <td class="k">عمال ترتيبات</td><td class="v">${formatNamesPdf(d.arrangements_staff)}</td>
                   </tr>
                 </table>
                 <div style="margin-top:20px;">
@@ -1573,7 +1579,7 @@
           ],
         });
 
-        // التعديل المطلوب: جدول الموظفين للورد (أقسام على اليمين وأسماء مجمعة على اليسار)
+        // جدول الموظفين للورد
         const staffRow = (title, names) => new TableRow({
           children: [
             cell([p([run(title, {bold:true, color:"0B2F2A"})])], { width: 25, fill: "F6F2E8" }),
