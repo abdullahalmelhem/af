@@ -613,8 +613,13 @@
               </div>
 
               <div>
-                <label class="label">عدد الركاب</label>
-                <input id="pax_count" class="inp" type="number" min="0" placeholder="0">
+                <label class="label">عدد الركاب القادمون</label>
+                <input id="pax_arr_count" class="inp" type="number" min="0" placeholder="0">
+              </div>
+
+              <div>
+                <label class="label">عدد الركاب المغادرون</label>
+                <input id="pax_dep_count" class="inp" type="number" min="0" placeholder="0">
               </div>
 
               <div>
@@ -918,7 +923,6 @@
       return inputs.map(i => i.value.trim()).filter(Boolean);
     }
 
-    // دالة لاستخراج الأسماء المضافة بشكل جدول شاقولي/عمودي (بناءً على طلبك السابق)
     function getVerticalStaffRows(d) {
       const maxLen = Math.max(
         d.movement_staff.length, d.loading_staff.length, d.food_staff.length,
@@ -1059,7 +1063,8 @@
         flight_arr: document.getElementById('flight_arr').value.trim(),
         flight_dep: document.getElementById('flight_dep').value.trim(),
 
-        pax_count: n0('pax_count'),
+        pax_arr_count: n0('pax_arr_count'),
+        pax_dep_count: n0('pax_dep_count'),
         delegations_count: n0('delegations_count'),
         vip_pax: n0('vip_pax'),
 
@@ -1082,7 +1087,6 @@
       };
     }
 
-    // دالة تدمج دوائر الآليات مع دوائر الإنارة
     function getCombinedChips(d) {
        let chips = [...d.services_chips];
        if (d.light_duration) chips.push(`إنارة (مدة): ${d.light_duration}`);
@@ -1094,7 +1098,7 @@
     const AIRCRAFT_OPTIONS = [
       "السورية", "فلاي شام", "الأردنية", "الجزيرة", "العربية",
       "القطرية", "التركية", "التركية أجيت صبيحة", "فلاي دبي",
-      "فلاي ناس", "فلاي أديل", "بوخاريست", "إغاثي", "حربي"
+      "فلاي ناس", "فلاي أديل", "بوخاريست", "إغاثي", "حربي", "خاصة"
     ];
 
     function setAircraftType(val){
@@ -1260,7 +1264,6 @@
 
     function safeText(x){ return (x && x.toString().trim()) ? x.toString().trim() : "—"; }
 
-    // الدالة المسؤولة عن تنسيق الأسماء لملف الـ PDF وتفادي مشكلة العكس في html2canvas
     function formatNamesPdf(arr) {
       if (!arr || arr.length === 0) return "—";
       return arr.map(n => `<span class="pdfAutoFix" dir="rtl">${escapeHtml(n)}</span>`).join(' ، ');
@@ -1295,12 +1298,12 @@
                     <td class="k" style="width:20%;">الفئة</td><td class="v" style="width:30%;"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.flight_class))}</span></td>
                   </tr>
                   <tr>
-                    <td class="k">عدد الركاب</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.pax_count)}</span></td>
-                    <td class="k">وفود</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.delegations_count)}</span></td>
+                    <td class="k">الركاب (قادمون)</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.pax_arr_count)}</span></td>
+                    <td class="k">الركاب (مغادرون)</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.pax_dep_count)}</span></td>
                   </tr>
                   <tr>
+                    <td class="k">وفود</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.delegations_count)}</span></td>
                     <td class="k">ركاب VIP</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.vip_pax)}</span></td>
-                    <td class="k">—</td><td class="v">—</td>
                   </tr>
                   <tr>
                     <td class="k">توقيت الوصول</td><td class="v" style="direction:ltr; text-align:right;"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.arr_time))}</span> / <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.arr_date))}</span></td>
@@ -1396,7 +1399,6 @@
         flightName = flightName.replace(/[\/\\:*?"<>|\s]/g, '-');
         const fileName = `${flightName}.pdf`;
 
-        // إرجاع الشاشة للأعلى تماماً قبل أخذ اللقطة لمنع القص
         window.scrollTo(0, 0);
 
         const opt = {
@@ -1406,7 +1408,7 @@
           html2canvas: {
             scale: 2, 
             useCORS: true,
-            windowWidth: 1100, // مقاس ثابت للحفاظ على التنسيق
+            windowWidth: 1100,
             scrollY: 0, 
             scrollX: 0,
             x: 0,
@@ -1416,11 +1418,9 @@
           pagebreak: { mode: ['css', 'legacy'] } 
         };
 
-        // تحويل الـ PDF إلى Blob حقيقي بصيغة application/pdf ثم مشاركته
         const worker = html2pdf().set(opt).from(pdfPage).toPdf();
         const rawBlob = await worker.outputPdf('blob');
 
-        // إجبار النوع ليكون PDF بشكل صريح حتى لا يتحول إلى BIN في واتساب
         const pdfBlob = new Blob([rawBlob], { type: 'application/pdf' });
         const fileForShare = new File([pdfBlob], fileName, {
           type: 'application/pdf',
@@ -1448,11 +1448,10 @@
       }finally{
         btn.innerText = old;
         btn.disabled = false;
-        document.getElementById('pdfPage').innerHTML = ""; // تنظيف الحاوية بعد الانتهاء
+        document.getElementById('pdfPage').innerHTML = ""; 
       }
     }
 
-    // ===== DOCX Native Export =====
     async function exportDocxNative(){
       const btn = document.getElementById('exportWordBtn');
       const oldText = btn.innerText;
@@ -1564,22 +1563,21 @@
           rows: [ new TableRow({ children: [headerTextCell, headerLogoCell] }) ]
         });
 
-        // Flight Data Table
         const part1 = new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
           borders,
           rows: [
             rowTitle("بيانات الرحلة", 4),
             row2("كاتب التقرير", d.rep_writer || "—", "نوع الطائرة", d.aircraft_type || "—"),
-            row2("الفئة", d.flight_class || "—", "عدد الركاب", d.pax_count.toString()),
+            row2("الفئة", d.flight_class || "—", "—", "—"),
+            row2("الركاب (قادمون)", d.pax_arr_count.toString(), "الركاب (مغادرون)", d.pax_dep_count.toString()),
+            row2("وفود", d.delegations_count.toString(), "ركاب VIP", d.vip_pax.toString()),
             row2("توقيت الوصول", `${d.arr_time || "—"} / ${d.arr_date || "—"}`, "توقيت المغادرة", `${d.dep_time || "—"} / ${d.dep_date || "—"}`),
             row2("رقم الفنكر", d.stand_num || "—", "رقم البوابة", d.gate_num || "—"),
             row2("رحلة قدوم", d.flight_arr || "—", "رحلة مغادرة", d.flight_dep || "—"),
-            row2("وفود", d.delegations_count.toString(), "ركاب VIP", d.vip_pax.toString()),
           ],
         });
 
-        // جدول الموظفين للورد
         const staffRow = (title, names) => new TableRow({
           children: [
             cell([p([run(title, {bold:true, color:"0B2F2A"})])], { width: 25, fill: "F6F2E8" }),
@@ -1680,7 +1678,7 @@
     function resetForm(){
       const idsToClear = [
         'rep_writer','aircraft_type','flight_class','arr_time','arr_date','dep_time','dep_date',
-        'stand_num','gate_num','flight_arr','flight_dep','pax_count',
+        'stand_num','gate_num','flight_arr','flight_dep','pax_arr_count','pax_dep_count',
         'delegations_count','vip_pax','found_items','receiver_name',
         'light_duration','light_stand','notes',
         'svc_belt_stairs_qty','svc_stairs_qty','svc_carts_qty','svc_charge_qty','svc_tractor_qty'
