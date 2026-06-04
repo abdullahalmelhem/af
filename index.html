@@ -1379,7 +1379,32 @@
       `;
     }
 
+    // ===== Validation Helper =====
+    function validateForm() {
+      const aircraft = document.getElementById('aircraft_type').value.trim();
+      const flightArr = document.getElementById('flight_arr').value.trim();
+      const arrTime = document.getElementById('arr_time').value.trim();
+      const flightDep = document.getElementById('flight_dep').value.trim();
+      const depTime = document.getElementById('dep_time').value.trim();
+
+      if (!aircraft) {
+        alert("يرجى الانتباه: يلزم أن تختار نوع الطائرة أولاً لتتمكن من تصدير التقرير.");
+        return false;
+      }
+      if (flightArr !== "" && arrTime === "") {
+        alert("يرجى الانتباه: بما أنك قمت بإدخال رقم رحلة القدوم، فيجب عليك إدخال توقيت الوصول (وقت) حصراً.");
+        return false;
+      }
+      if (flightDep !== "" && depTime === "") {
+        alert("يرجى الانتباه: بما أنك قمت بإدخال رقم رحلة المغادرة، فيجب عليك إدخال توقيت المغادرة (وقت) حصراً.");
+        return false;
+      }
+      return true;
+    }
+
     async function exportPdfPro(){
+      if(!validateForm()) return; // Added Validation Here
+      
       const btn = document.getElementById('exportPdfBtn');
       const old = btn.innerText;
       btn.innerText = "جاري التجهيز...";
@@ -1453,6 +1478,8 @@
     }
 
     async function exportDocxNative(){
+      if(!validateForm()) return; // Added Validation Here
+
       const btn = document.getElementById('exportWordBtn');
       const oldText = btn.innerText;
       btn.innerText = "جاري التجهيز...";
