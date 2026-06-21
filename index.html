@@ -349,13 +349,12 @@
     }
 
     /* ===== القالب الاحترافي للتصدير كـ PDF ===== */
-    /* تم التعديل لمنع القص من اليسار على الجوال وضمان توسط الحاوية */
     #pdfRoot{
       position: absolute;
       top: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 1100px; /* مقاس ثابت للحفاظ على التنسيق الذي طلبته */
+      width: 1100px;
       direction: rtl;
       font-family: 'Tajawal', Arial, sans-serif;
       color: #000000;
@@ -484,11 +483,10 @@
       margin-top: 8px;
     }
 
-    /* === Fix mixed RTL/LTR (letters+numbers+symbols+spaces) in PDF canvas === */
     .pdfAutoFix{
       direction: auto !important;
       unicode-bidi: isolate !important;
-      white-space: pre !important; /* يحافظ على الفراغات مثل "XY 45" */
+      white-space: pre !important;
       display: inline-block !important;
     }
   </style>
@@ -1095,10 +1093,11 @@
        return chips;
     }
 
+    // تم إضافة "الاتحاد" إلى القائمة
     const AIRCRAFT_OPTIONS = [
       "السورية", "فلاي شام", "الأردنية", "الجزيرة", "العربية",
       "القطرية", "التركية", "التركية أجيت صبيحة", "فلاي دبي",
-      "فلاي ناس", "فلاي أديل", "بوخاريست", "إغاثي", "حربي", "خاصة"
+      "فلاي ناس", "فلاي أديل", "بوخاريست", "إغاثي", "حربي", "خاصة", "الاتحاد"
     ];
 
     function setAircraftType(val){
@@ -1379,7 +1378,7 @@
       `;
     }
 
-    // ===== Validation Helper =====
+    // ===== دالة التحقق المعدلة لتشمل الشروط التبادلية (وبالعكس) وإلزامية اسم الطيارة =====
     function validateForm() {
       const aircraft = document.getElementById('aircraft_type').value.trim();
       const flightArr = document.getElementById('flight_arr').value.trim();
@@ -1387,23 +1386,36 @@
       const flightDep = document.getElementById('flight_dep').value.trim();
       const depTime = document.getElementById('dep_time').value.trim();
 
+      // التحقق من إلزامية نوع الطائرة
       if (!aircraft) {
-        alert("يرجى الانتباه: يلزم أن تختار نوع الطائرة أولاً لتتمكن من تصدير التقرير.");
+        alert("يرجى الانتباه: خانة نوع الطائرة إجبارية. يرجى اختيار نوع الطائرة أولاً لتتمكن من تصدير التقرير.");
         return false;
       }
+      // إذا وضع رقم رحلة القدوم، يجب وضع وقت القدوم
       if (flightArr !== "" && arrTime === "") {
-        alert("يرجى الانتباه: بما أنك قمت بإدخال رقم رحلة القدوم، فيجب عليك إدخال توقيت الوصول (وقت) حصراً.");
+        alert("يرجى الانتباه: بما أنك قمت بإدخال رقم رحلة القدوم، فيجب عليك إدخال توقيت الوصول (وقت) حتماً.");
         return false;
       }
+      // بالعكس: إذا وضع وقت القدوم، يجب وضع رقم رحلة القدوم
+      if (arrTime !== "" && flightArr === "") {
+        alert("يرجى الانتباه: بما أنك قمت بإدخال توقيت الوصول (وقت)، فيجب عليك إدخال رقم رحلة القدوم حتماً.");
+        return false;
+      }
+      // إذا وضع رقم رحلة المغادرة، يجب وضع وقت المغادرة
       if (flightDep !== "" && depTime === "") {
-        alert("يرجى الانتباه: بما أنك قمت بإدخال رقم رحلة المغادرة، فيجب عليك إدخال توقيت المغادرة (وقت) حصراً.");
+        alert("يرجى الانتباه: بما أنك قمت بإدخال رقم رحلة المغادرة، فيجب عليك إدخال توقيت المغادرة (وقت) حتماً.");
+        return false;
+      }
+      // بالعكس: إذا وضع وقت المغادرة، يجب وضع رقم رحلة المغادرة
+      if (depTime !== "" && flightDep === "") {
+        alert("يرجى الانتباه: بما أنك قمت بإدخال توقيت المغادرة (وقت)، فيجب عليك إدخال رقم رحلة المغادرة حتماً.");
         return false;
       }
       return true;
     }
 
     async function exportPdfPro(){
-      if(!validateForm()) return; // Added Validation Here
+      if(!validateForm()) return; // منع التصدير عند عدم تحقق الشروط
       
       const btn = document.getElementById('exportPdfBtn');
       const old = btn.innerText;
@@ -1415,11 +1427,22 @@
         const pdfPage = document.getElementById('pdfPage');
         pdfPage.innerHTML = buildPdfTemplateHtml(d);
 
+        // بناء اسم الملف ليحتوي على نوع الطائرة ورقم الرحلة معاً
+        let flightNum = "";
+        if (d.flight_arr && d.flight_dep) flightNum = `${d.flight_arr}_${d.flight_dep}`;
+        else if (d.flight_arr) flightNum = d.flight_arr;
+        else if (d.flight_dep) flightNum = d.flight_dep;
+
         let flightName = "";
-        if (d.flight_arr && d.flight_dep) flightName = `${d.flight_arr}_${d.flight_dep}`;
-        else if (d.flight_arr) flightName = d.flight_arr;
-        else if (d.flight_dep) flightName = d.flight_dep;
-        else flightName = `Ramp_Report_${new Date().toISOString().slice(0,10)}`;
+        if (d.aircraft_type && flightNum) {
+          flightName = `${d.aircraft_type}_${flightNum}`;
+        } else if (d.aircraft_type) {
+          flightName = d.aircraft_type;
+        } else if (flightNum) {
+          flightName = flightNum;
+        } else {
+          flightName = `Ramp_Report_${new Date().toISOString().slice(0,10)}`;
+        }
 
         flightName = flightName.replace(/[\/\\:*?"<>|\s]/g, '-');
         const fileName = `${flightName}.pdf`;
@@ -1478,7 +1501,7 @@
     }
 
     async function exportDocxNative(){
-      if(!validateForm()) return; // Added Validation Here
+      if(!validateForm()) return; // منع التصدير عند عدم تحقق الشروط
 
       const btn = document.getElementById('exportWordBtn');
       const oldText = btn.innerText;
@@ -1674,11 +1697,22 @@
 
         const blob = await Packer.toBlob(doc);
 
+        // بناء اسم ملف Word المعدل ليجمع بين نوع الطائرة ورقم الرحلة
+        let flightNum = "";
+        if (d.flight_arr && d.flight_dep) flightNum = `${d.flight_arr}_${d.flight_dep}`;
+        else if (d.flight_arr) flightNum = d.flight_arr;
+        else if (d.flight_dep) flightNum = d.flight_dep;
+
         let flightName = "";
-        if (d.flight_arr && d.flight_dep) flightName = `${d.flight_arr}_${d.flight_dep}`;
-        else if (d.flight_arr) flightName = d.flight_arr;
-        else if (d.flight_dep) flightName = d.flight_dep;
-        else flightName = `Ramp_Report_${new Date().toISOString().slice(0,10)}`;
+        if (d.aircraft_type && flightNum) {
+          flightName = `${d.aircraft_type}_${flightNum}`;
+        } else if (d.aircraft_type) {
+          flightName = d.aircraft_type;
+        } else if (flightNum) {
+          flightName = flightNum;
+        } else {
+          flightName = `Ramp_Report_${new Date().toISOString().slice(0,10)}`;
+        }
 
         flightName = flightName.replace(/[\/\\:*?"<>|\s]/g, '-');
         const fileName = `${flightName}.docx`;
