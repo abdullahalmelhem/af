@@ -527,12 +527,31 @@
                 <label class="label">تقرير العنصر (اسم كاتب التقرير)</label>
                 <input id="rep_writer" class="inp" type="text" placeholder="مثال: أحمد محمد">
               </div>
+              
+              <!-- حقل الشركة المخدمة الجديد -->
+              <div>
+                <label class="label">الشركة المخدمة <span class="text-red-500 font-bold">*</span></label>
+                <input id="service_company" type="hidden" value="">
+                <div id="companySelect" class="select-wrap">
+                  <button id="company_btn" type="button" class="inp select-btn" aria-haspopup="listbox" aria-expanded="false">
+                    <span id="company_btn_text">اختر الشركة المخدمة...</span>
+                    <span class="left-icons">
+                      <span class="plane">🏢</span>
+                      <span class="chev"></span>
+                    </span>
+                  </button>
+
+                  <div id="company_menu" class="select-menu hidden" role="listbox" aria-label="قائمة الشركة المخدمة">
+                    <input id="company_search" class="inp select-search" type="text" placeholder="بحث سريع...">
+                    <div id="company_list" class="select-list"></div>
+                    <div id="company_empty" class="select-empty hidden">لا يوجد نتائج</div>
+                  </div>
+                </div>
+              </div>
 
               <div>
                 <label class="label">الفئة</label>
-
                 <input id="flight_class" type="hidden" value="">
-
                 <div id="classSelect" class="select-wrap">
                   <button id="class_btn" type="button" class="inp select-btn" aria-haspopup="listbox" aria-expanded="false">
                     <span id="class_btn_text">اختر الفئة...</span>
@@ -551,10 +570,8 @@
               </div>
 
               <div>
-                <label class="label">نوع الطائرة</label>
-
+                <label class="label">نوع الطائرة <span class="text-red-500 font-bold">*</span></label>
                 <input id="aircraft_type" type="hidden" value="">
-
                 <div id="aircraftSelect" class="select-wrap">
                   <button id="aircraft_btn" type="button" class="inp select-btn" aria-haspopup="listbox" aria-expanded="false">
                     <span id="aircraft_btn_text">اختر نوع الطائرة...</span>
@@ -625,7 +642,7 @@
                 <input id="delegations_count" class="inp" type="number" min="0" placeholder="0">
               </div>
 
-              <div class="sm:col-span-2">
+              <div>
                 <label class="label">ركاب VIP (عدد)</label>
                 <input id="vip_pax" class="inp" type="number" min="0" placeholder="0">
               </div>
@@ -1050,6 +1067,7 @@
     function gatherData(){
       return {
         rep_writer: document.getElementById('rep_writer').value.trim(),
+        service_company: document.getElementById('service_company').value.trim(), // الحقل الجديد
         flight_class: document.getElementById('flight_class').value.trim(),
         aircraft_type: document.getElementById('aircraft_type').value.trim(),
         arr_date: document.getElementById('arr_date').value,
@@ -1093,7 +1111,91 @@
        return chips;
     }
 
-        // تم إضافة "الكويتية" والأنواع الجديدة إلى القائمة
+    // ===== Company Select =====
+    const COMPANY_OPTIONS = [
+      "غصوب", "فلاي شام", "سيرافيا", "السوريه", "سيريا جيت", "فلاي دار", "فلاي ناس", "فلو"
+    ];
+
+    function setCompanyType(val){
+      const hidden = document.getElementById('service_company');
+      const btnText = document.getElementById('company_btn_text');
+      hidden.value = (val || "").trim();
+      btnText.textContent = hidden.value ? hidden.value : "اختر الشركة المخدمة...";
+      renderCompanyList(document.getElementById('company_search').value || "");
+    }
+
+    function renderCompanyList(filterText){
+      const list = document.getElementById('company_list');
+      const empty = document.getElementById('company_empty');
+      const selected = (document.getElementById('service_company').value || "").trim();
+
+      const f = (filterText || "").trim().toLowerCase();
+      const items = COMPANY_OPTIONS.filter(x => x.toLowerCase().includes(f));
+
+      list.innerHTML = "";
+      if(items.length === 0){
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      items.forEach(name => {
+        const b = document.createElement('button');
+        b.type = "button";
+        b.className = "select-item" + (name === selected ? " selected" : "");
+        b.setAttribute("role", "option");
+        b.setAttribute("aria-selected", name === selected ? "true" : "false");
+        b.dataset.value = name;
+        b.innerHTML = `<span>${escapeHtml(name)}</span><span class="tick">✓</span>`;
+        b.onclick = () => {
+          setCompanyType(name);
+          closeCompanyMenu();
+        };
+        list.appendChild(b);
+      });
+    }
+
+    function openCompanyMenu(){
+      const wrap = document.getElementById('companySelect');
+      const menu = document.getElementById('company_menu');
+      const btn = document.getElementById('company_btn');
+      wrap.classList.add('open');
+      menu.classList.remove('hidden');
+      btn.setAttribute("aria-expanded", "true");
+      document.getElementById('company_search').focus();
+      renderCompanyList(document.getElementById('company_search').value || "");
+    }
+
+    function closeCompanyMenu(){
+      const wrap = document.getElementById('companySelect');
+      const menu = document.getElementById('company_menu');
+      const btn = document.getElementById('company_btn');
+      wrap.classList.remove('open');
+      menu.classList.add('hidden');
+      btn.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleCompanyMenu(){
+      const menu = document.getElementById('company_menu');
+      if(menu.classList.contains('hidden')) openCompanyMenu();
+      else closeCompanyMenu();
+    }
+
+    function initCompanySelect(){
+      const btn = document.getElementById('company_btn');
+      const search = document.getElementById('company_search');
+      btn.addEventListener('click', toggleCompanyMenu);
+      search.addEventListener('input', (e) => { renderCompanyList(e.target.value || ""); });
+      document.addEventListener('keydown', (e) => { if(e.key === "Escape") closeCompanyMenu(); });
+      document.addEventListener('click', (e) => {
+        const wrap = document.getElementById('companySelect');
+        if(!wrap.contains(e.target)) closeCompanyMenu();
+      });
+      setCompanyType("");
+      closeCompanyMenu();
+    }
+
+    // ===== Aircraft Select =====
     const AIRCRAFT_OPTIONS = [
       "السورية", "فلاي شام", "الأردنية", "الجزيرة", "العربية",
       "القطرية", "التركية", "التركية أجيت صبيحة", "فلاي دبي",
@@ -1180,6 +1282,7 @@
       closeAircraftMenu();
     }
 
+    // ===== Class Select =====
     const CLASS_OPTIONS = ["A","B"];
 
     function setClassType(val){
@@ -1271,7 +1374,6 @@
     function buildPdfTemplateHtml(d){
       const createdStr = new Date().toLocaleString('ar');
       const allChipsHtml = getCombinedChips(d).map(s => `<span class="pdfChip"><span class="pdfAutoFix" dir="auto">${escapeHtml(s)}</span></span>`).join("");
-      const staffRows = getVerticalStaffRows(d);
 
       return `
         <div class="pdfPage">
@@ -1293,8 +1395,11 @@
               <div class="pdfCardBody">
                 <table class="pdfTable">
                   <tr>
+                    <td class="k" style="width:20%;">الشركة المخدمة</td><td class="v" style="width:30%;"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.service_company))}</span></td>
                     <td class="k" style="width:20%;">نوع الطائرة</td><td class="v" style="width:30%;"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.aircraft_type))}</span></td>
-                    <td class="k" style="width:20%;">الفئة</td><td class="v" style="width:30%;"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.flight_class))}</span></td>
+                  </tr>
+                  <tr>
+                    <td class="k">الفئة</td><td class="v" colspan="3"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.flight_class))}</span></td>
                   </tr>
                   <tr>
                     <td class="k">الركاب (قادمون)</td><td class="v"><span class="pdfAutoFix" dir="auto">${escapeHtml(d.pax_arr_count)}</span></td>
@@ -1378,35 +1483,38 @@
       `;
     }
 
-    // ===== دالة التحقق المعدلة لتشمل الشروط التبادلية (وبالعكس) وإلزامية اسم الطيارة =====
+    // ===== التحقق وإلزامية الحقول =====
     function validateForm() {
+      const company = document.getElementById('service_company').value.trim(); // حقل الشركة
       const aircraft = document.getElementById('aircraft_type').value.trim();
       const flightArr = document.getElementById('flight_arr').value.trim();
       const arrTime = document.getElementById('arr_time').value.trim();
       const flightDep = document.getElementById('flight_dep').value.trim();
       const depTime = document.getElementById('dep_time').value.trim();
 
+      // التحقق من إلزامية الشركة المخدمة
+      if (!company) {
+        alert("يرجى الانتباه: خانة الشركة المخدمة إجبارية. يرجى اختيار الشركة المخدمة أولاً لتتمكن من تصدير التقرير.");
+        return false;
+      }
       // التحقق من إلزامية نوع الطائرة
       if (!aircraft) {
         alert("يرجى الانتباه: خانة نوع الطائرة إجبارية. يرجى اختيار نوع الطائرة أولاً لتتمكن من تصدير التقرير.");
         return false;
       }
-      // إذا وضع رقم رحلة القدوم، يجب وضع وقت القدوم
+      // شروط الترابط لأوقات الرحلات
       if (flightArr !== "" && arrTime === "") {
         alert("يرجى الانتباه: بما أنك قمت بإدخال رقم رحلة القدوم، فيجب عليك إدخال توقيت الوصول (وقت) حتماً.");
         return false;
       }
-      // بالعكس: إذا وضع وقت القدوم، يجب وضع رقم رحلة القدوم
       if (arrTime !== "" && flightArr === "") {
         alert("يرجى الانتباه: بما أنك قمت بإدخال توقيت الوصول (وقت)، فيجب عليك إدخال رقم رحلة القدوم حتماً.");
         return false;
       }
-      // إذا وضع رقم رحلة المغادرة، يجب وضع وقت المغادرة
       if (flightDep !== "" && depTime === "") {
         alert("يرجى الانتباه: بما أنك قمت بإدخال رقم رحلة المغادرة، فيجب عليك إدخال توقيت المغادرة (وقت) حتماً.");
         return false;
       }
-      // بالعكس: إذا وضع وقت المغادرة، يجب وضع رقم رحلة المغادرة
       if (depTime !== "" && flightDep === "") {
         alert("يرجى الانتباه: بما أنك قمت بإدخال توقيت المغادرة (وقت)، فيجب عليك إدخال رقم رحلة المغادرة حتماً.");
         return false;
@@ -1415,7 +1523,7 @@
     }
 
     async function exportPdfPro(){
-      if(!validateForm()) return; // منع التصدير عند عدم تحقق الشروط
+      if(!validateForm()) return; 
       
       const btn = document.getElementById('exportPdfBtn');
       const old = btn.innerText;
@@ -1427,7 +1535,6 @@
         const pdfPage = document.getElementById('pdfPage');
         pdfPage.innerHTML = buildPdfTemplateHtml(d);
 
-        // بناء اسم الملف ليحتوي على نوع الطائرة ورقم الرحلة معاً
         let flightNum = "";
         if (d.flight_arr && d.flight_dep) flightNum = `${d.flight_arr}_${d.flight_dep}`;
         else if (d.flight_arr) flightNum = d.flight_arr;
@@ -1501,7 +1608,7 @@
     }
 
     async function exportDocxNative(){
-      if(!validateForm()) return; // منع التصدير عند عدم تحقق الشروط
+      if(!validateForm()) return; 
 
       const btn = document.getElementById('exportWordBtn');
       const oldText = btn.innerText;
@@ -1618,8 +1725,8 @@
           borders,
           rows: [
             rowTitle("بيانات الرحلة", 4),
-            row2("كاتب التقرير", d.rep_writer || "—", "نوع الطائرة", d.aircraft_type || "—"),
-            row2("الفئة", d.flight_class || "—", "—", "—"),
+            row2("الشركة المخدمة", d.service_company || "—", "نوع الطائرة", d.aircraft_type || "—"),
+            row2("كاتب التقرير", d.rep_writer || "—", "الفئة", d.flight_class || "—"),
             row2("الركاب (قادمون)", d.pax_arr_count.toString(), "الركاب (مغادرون)", d.pax_dep_count.toString()),
             row2("وفود", d.delegations_count.toString(), "ركاب VIP", d.vip_pax.toString()),
             row2("توقيت الوصول", `${d.arr_time || "—"} / ${d.arr_date || "—"}`, "توقيت المغادرة", `${d.dep_time || "—"} / ${d.dep_date || "—"}`),
@@ -1697,7 +1804,6 @@
 
         const blob = await Packer.toBlob(doc);
 
-        // بناء اسم ملف Word المعدل ليجمع بين نوع الطائرة ورقم الرحلة
         let flightNum = "";
         if (d.flight_arr && d.flight_dep) flightNum = `${d.flight_arr}_${d.flight_dep}`;
         else if (d.flight_arr) flightNum = d.flight_arr;
@@ -1738,7 +1844,7 @@
 
     function resetForm(){
       const idsToClear = [
-        'rep_writer','aircraft_type','flight_class','arr_time','arr_date','dep_time','dep_date',
+        'rep_writer','service_company','aircraft_type','flight_class','arr_time','arr_date','dep_time','dep_date',
         'stand_num','gate_num','flight_arr','flight_dep','pax_arr_count','pax_dep_count',
         'delegations_count','vip_pax','found_items','receiver_name',
         'light_duration','light_stand','notes',
@@ -1748,6 +1854,7 @@
 
       setAircraftType("");
       setClassType("");
+      setCompanyType(""); // تفريغ حقل الشركة الجديدة
 
       [
         'svc_lift','svc_catering1','svc_compressor','svc_battery','svc_salt_water','svc_fresh_water',
@@ -1767,6 +1874,7 @@
 
     window.onload = function(){
       setTodayDefaults();
+      initCompanySelect(); // تشغيل قائمة الشركة
       initAircraftSelect();
       initClassSelect();
       applyServiceVisibility();
