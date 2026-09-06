@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>ساحة الطيران - تقرير خدمة الطائرة</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -19,6 +19,15 @@
       --muted:#8fb3ad;
     }
 
+    /* إصلاح جذري للإزاحة */
+    html, body {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
     body{
       font-family:'Tajawal',system-ui,-apple-system,Segoe UI,Arial;
       background:
@@ -27,6 +36,17 @@
         linear-gradient(180deg, var(--bg0), var(--bg1));
       color: var(--txt);
       min-height:100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* تحديد مساحة الحاوية الأساسية لتلائم الشاشات */
+    .container-fluid {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 10px;
+      box-sizing: border-box;
     }
 
     .glass{
@@ -40,6 +60,8 @@
       border: 1px solid var(--line);
       border-radius: 18px;
       box-shadow: 0 18px 45px rgba(0,0,0,.35);
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .section{
@@ -65,6 +87,7 @@
       padding: 12px 12px;
       outline:none;
       transition: .15s;
+      box-sizing: border-box;
     }
     .inp:focus, .ta:focus{
       border-color: rgba(185,167,121,.65);
@@ -89,6 +112,7 @@
       transition: .15s;
       display:flex; align-items:center; justify-content:center; gap:10px;
       user-select:none;
+      box-sizing: border-box;
     }
     .btn-gold{
       background: linear-gradient(180deg, var(--gold), var(--gold2));
@@ -119,7 +143,7 @@
     }
 
     /* ========= Custom Dropdown ========= */
-    .select-wrap{ position:relative; }
+    .select-wrap{ position:relative; width: 100%; box-sizing: border-box; }
 
     .select-btn{
       display:flex;
@@ -173,6 +197,9 @@
       backdrop-filter: blur(12px);
       box-shadow: 0 18px 55px rgba(0,0,0,.45);
       animation: pop .12s ease-out;
+      box-sizing: border-box;
+      left: 0;
+      right: 0;
     }
     @keyframes pop{
       from{ opacity:0; transform: translateY(-4px) scale(.99); }
@@ -185,6 +212,8 @@
       border-bottom: 1px solid rgba(255,255,255,.10);
       background: rgba(4,28,26,.45);
       padding: 12px 14px;
+      box-sizing: border-box;
+      width: 100%;
     }
     .select-search:focus{
       box-shadow:none;
@@ -212,6 +241,7 @@
       transition: .12s;
       cursor:pointer;
       user-select:none;
+      box-sizing: border-box;
     }
     .select-item:hover{
       background: rgba(185,167,121,.12);
@@ -258,6 +288,7 @@
       transition: .12s;
       position: relative;
       overflow: hidden;
+      box-sizing: border-box;
     }
     .svcCard::before{
       content:"";
@@ -351,16 +382,16 @@
     /* ===== القالب الاحترافي للتصدير كـ PDF ===== */
     #pdfRoot{
       position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
+      top: -9999px;
+      left: -9999px;
       width: 1100px;
       direction: rtl;
       font-family: 'Tajawal', Arial, sans-serif;
       color: #000000;
       z-index: -9999;
-      opacity: 0.01;
+      opacity: 0;
       pointer-events: none;
+      overflow: hidden;
     }
     .pdfPage{
       background: #ffffff;
@@ -492,402 +523,404 @@
   </style>
 </head>
 
-<body class="p-4 sm:p-6">
-  <div class="mx-auto max-w-4xl card overflow-hidden">
-    <div class="p-5 sm:p-6 glass no-print">
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-3">
-          <img src="logo.png" onerror="this.style.display='none'" class="w-12 h-12 object-contain">
-          <div>
-            <div class="text-[11px] text-[color:var(--gold)] font-extrabold tracking-wide">الجمهورية العربية السورية</div>
-            <div class="text-base sm:text-lg font-extrabold">ساحة الطيران - نموذج تقرير خدمة الطائرة</div>
+<body>
+  <div class="container-fluid">
+    <div class="mx-auto max-w-4xl card overflow-hidden">
+      <div class="p-5 sm:p-6 glass no-print">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex items-center gap-3">
+            <img src="logo.png" onerror="this.style.display='none'" class="w-12 h-12 object-contain">
+            <div>
+              <div class="text-[11px] text-[color:var(--gold)] font-extrabold tracking-wide">الجمهورية العربية السورية</div>
+              <div class="text-base sm:text-lg font-extrabold">ساحة الطيران - نموذج تقرير خدمة الطائرة</div>
+            </div>
           </div>
-        </div>
 
-        <div class="flex flex-wrap gap-2">
-          <button id="exportWordBtn" class="btn btn-dark" onclick="exportDocxNative()">تصدير ومشاركة Word</button>
-          <button id="exportPdfBtn" class="btn btn-gold" onclick="exportPdfPro()">تصدير ومشاركة PDF</button>
-          <button class="btn btn-dark" onclick="resetForm()">تفريغ</button>
+          <div class="flex flex-wrap gap-2">
+            <button id="exportWordBtn" class="btn btn-dark" onclick="exportDocxNative()">تصدير ومشاركة Word</button>
+            <button id="exportPdfBtn" class="btn btn-gold" onclick="exportPdfPro()">تصدير ومشاركة PDF</button>
+            <button class="btn btn-dark" onclick="resetForm()">تفريغ</button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="p-4 sm:p-6">
-      <div class="grid grid-cols-1 gap-4">
-        <div class="space-y-4">
-          <div class="section p-4 sm:p-5">
-            <div class="flex items-center justify-between gap-3 mb-3">
-              <div class="text-[color:var(--gold)] font-extrabold">بيانات الرحلة</div>
-              <span class="mini">املأ البيانات ثم قم بتصدير التقرير</span>
-            </div>
-            <div class="divider mb-4"></div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="label">تقرير العنصر (اسم كاتب التقرير)</label>
-                <input id="rep_writer" class="inp" type="text" placeholder="مثال: أحمد محمد">
+      <div class="p-4 sm:p-6">
+        <div class="grid grid-cols-1 gap-4">
+          <div class="space-y-4">
+            <div class="section p-4 sm:p-5">
+              <div class="flex items-center justify-between gap-3 mb-3">
+                <div class="text-[color:var(--gold)] font-extrabold">بيانات الرحلة</div>
+                <span class="mini">املأ البيانات ثم قم بتصدير التقرير</span>
               </div>
-              
-              <!-- حقل الشركة المخدمة الجديد -->
-              <div>
-                <label class="label">الشركة المخدمة <span class="text-red-500 font-bold">*</span></label>
-                <input id="service_company" type="hidden" value="">
-                <div id="companySelect" class="select-wrap">
-                  <button id="company_btn" type="button" class="inp select-btn" aria-haspopup="listbox" aria-expanded="false">
-                    <span id="company_btn_text">اختر الشركة المخدمة...</span>
-                    <span class="left-icons">
-                      <span class="plane">🏢</span>
-                      <span class="chev"></span>
-                    </span>
-                  </button>
+              <div class="divider mb-4"></div>
 
-                  <div id="company_menu" class="select-menu hidden" role="listbox" aria-label="قائمة الشركة المخدمة">
-                    <input id="company_search" class="inp select-search" type="text" placeholder="بحث سريع...">
-                    <div id="company_list" class="select-list"></div>
-                    <div id="company_empty" class="select-empty hidden">لا يوجد نتائج</div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="label">تقرير العنصر (اسم كاتب التقرير)</label>
+                  <input id="rep_writer" class="inp" type="text" placeholder="مثال: أحمد محمد">
+                </div>
+                
+                <!-- حقل الشركة المخدمة الجديد -->
+                <div>
+                  <label class="label">الشركة المخدمة <span class="text-red-500 font-bold">*</span></label>
+                  <input id="service_company" type="hidden" value="">
+                  <div id="companySelect" class="select-wrap">
+                    <button id="company_btn" type="button" class="inp select-btn" aria-haspopup="listbox" aria-expanded="false">
+                      <span id="company_btn_text">اختر الشركة المخدمة...</span>
+                      <span class="left-icons">
+                        <span class="plane">🏢</span>
+                        <span class="chev"></span>
+                      </span>
+                    </button>
+
+                    <div id="company_menu" class="select-menu hidden" role="listbox" aria-label="قائمة الشركة المخدمة">
+                      <input id="company_search" class="inp select-search" type="text" placeholder="بحث سريع...">
+                      <div id="company_list" class="select-list"></div>
+                      <div id="company_empty" class="select-empty hidden">لا يوجد نتائج</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="label">الفئة</label>
+                  <input id="flight_class" type="hidden" value="">
+                  <div id="classSelect" class="select-wrap">
+                    <button id="class_btn" type="button" class="inp select-btn" aria-haspopup="listbox" aria-expanded="false">
+                      <span id="class_btn_text">اختر الفئة...</span>
+                      <span class="left-icons">
+                        <span class="plane">✈</span>
+                        <span class="chev"></span>
+                      </span>
+                    </button>
+
+                    <div id="class_menu" class="select-menu hidden" role="listbox" aria-label="قائمة الفئة">
+                      <input id="class_search" class="inp select-search" type="text" placeholder="بحث سريع...">
+                      <div id="class_list" class="select-list"></div>
+                      <div id="class_empty" class="select-empty hidden">لا يوجد نتائج</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="label">نوع الطائرة <span class="text-red-500 font-bold">*</span></label>
+                  <input id="aircraft_type" type="hidden" value="">
+                  <div id="aircraftSelect" class="select-wrap">
+                    <button id="aircraft_btn" type="button" class="inp select-btn" aria-haspopup="listbox" aria-expanded="false">
+                      <span id="aircraft_btn_text">اختر نوع الطائرة...</span>
+                      <span class="left-icons">
+                        <span class="plane">✈</span>
+                        <span class="chev"></span>
+                      </span>
+                    </button>
+
+                    <div id="aircraft_menu" class="select-menu hidden" role="listbox" aria-label="قائمة نوع الطائرة">
+                      <input id="aircraft_search" class="inp select-search" type="text" placeholder="بحث سريع...">
+                      <div id="aircraft_list" class="select-list"></div>
+                      <div id="aircraft_empty" class="select-empty hidden">لا يوجد نتائج</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 sm:col-span-2">
+                  <div>
+                    <label class="label">توقيت الوصول (تاريخ)</label>
+                    <input id="arr_date" class="inp" type="date">
+                  </div>
+                  <div>
+                    <label class="label">توقيت الوصول (وقت)</label>
+                    <input id="arr_time" class="inp" type="time">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 sm:col-span-2">
+                  <div>
+                    <label class="label">توقيت المغادرة (تاريخ)</label>
+                    <input id="dep_date" class="inp" type="date">
+                  </div>
+                  <div>
+                    <label class="label">توقيت المغادرة (وقت)</label>
+                    <input id="dep_time" class="inp" type="time">
+                  </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="label">مهبط الطائرة</label>
+                  <div class="grid grid-cols-2 gap-2">
+                    <input id="stand_num" class="inp" type="text" placeholder="رقم الفنكر">
+                    <input id="gate_num" class="inp" type="text" placeholder="رقم البوابة">
+                  </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="label">رقم الرحلة</label>
+                  <div class="grid grid-cols-2 gap-2">
+                    <input id="flight_arr" class="inp" type="text" placeholder="قدوم">
+                    <input id="flight_dep" class="inp" type="text" placeholder="مغادرة">
+                  </div>
+                </div>
+
+                <div>
+                  <label class="label">عدد الركاب القادمون</label>
+                  <input id="pax_arr_count" class="inp" type="number" min="0" placeholder="0">
+                </div>
+
+                <div>
+                  <label class="label">عدد الركاب المغادرون</label>
+                  <input id="pax_dep_count" class="inp" type="number" min="0" placeholder="0">
+                </div>
+
+                <div>
+                  <label class="label">وفود (عدد)</label>
+                  <input id="delegations_count" class="inp" type="number" min="0" placeholder="0">
+                </div>
+
+                <div>
+                  <label class="label">ركاب VIP (عدد)</label>
+                  <input id="vip_pax" class="inp" type="number" min="0" placeholder="0">
+                </div>
+              </div>
+            </div>
+
+            <div class="section p-4 sm:p-5">
+              <div class="flex items-center justify-between gap-3 mb-3">
+                <div class="text-[color:var(--gold)] font-extrabold">الطواقم الموظفين + المفقودات</div>
+                <span class="mini">يمكن إضافة أكثر من اسم لكل بند</span>
+              </div>
+              <div class="divider mb-4"></div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-[color:var(--gold)] font-bold">موظف الحركة</div>
+                    <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('movement_staff')">+ إضافة</button>
+                  </div>
+                  <div id="movement_staff" class="space-y-2"></div>
+                </div>
+
+                <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-[color:var(--gold)] font-bold">عمال التحميل</div>
+                    <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('loading_staff')">+ إضافة</button>
+                  </div>
+                  <div id="loading_staff" class="space-y-2"></div>
+                </div>
+
+                <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-[color:var(--gold)] font-bold">ضيافة جوية</div>
+                    <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('food_staff')">+ إضافة</button>
+                  </div>
+                  <div id="food_staff" class="space-y-2"></div>
+                </div>
+
+                <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-[color:var(--gold)] font-bold">عمال الصيانة</div>
+                    <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('maintenance_staff')">+ إضافة</button>
+                  </div>
+                  <div id="maintenance_staff" class="space-y-2"></div>
+                </div>
+
+                <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-[color:var(--gold)] font-bold">عمال الكاترينغ</div>
+                    <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('catering_staff')">+ إضافة</button>
+                  </div>
+                  <div id="catering_staff" class="space-y-2"></div>
+                </div>
+
+                <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-[color:var(--gold)] font-bold">عمال السادكوب</div>
+                    <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('sadkoub_staff')">+ إضافة</button>
+                  </div>
+                  <div id="sadkoub_staff" class="space-y-2"></div>
+                </div>
+
+                <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-[color:var(--gold)] font-bold">عمال آليات</div>
+                    <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('vehicles_staff')">+ إضافة</button>
+                  </div>
+                  <div id="vehicles_staff" class="space-y-2"></div>
+                </div>
+
+                <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-[color:var(--gold)] font-bold">عمال ترتيبات</div>
+                    <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('arrangements_staff')">+ إضافة</button>
+                  </div>
+                  <div id="arrangements_staff" class="space-y-2"></div>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <label class="label">المفقودات التي وُجدت على الطائرة</label>
+                <textarea id="found_items" class="ta" placeholder="اكتب المفقودات إن وجدت..."></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                <div>
+                  <label class="label">اسم المستلم</label>
+                  <input id="receiver_name" class="inp" type="text" placeholder="اسم المستلم">
+                </div>
+              </div>
+            </div>
+
+            <div class="section p-4 sm:p-5">
+              <div class="flex items-center justify-between gap-3 mb-3">
+                <div class="text-[color:var(--gold)] font-extrabold">آليات الخدمة</div>
+                <span class="mini">اختر الموجود واملأ الأعداد عند الحاجة</span>
+              </div>
+              <div class="divider mb-4"></div>
+
+              <div id="svcGrid" class="svcGrid">
+                <div class="svcCard" data-svc="lift">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">⚙</span> رافعة</div>
+                    <div class="svcToggle"><input id="svc_lift" type="checkbox"></div>
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="catering">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🍽</span> كاترينغ</div>
+                    <div class="svcToggle"><input id="svc_catering1" type="checkbox"></div>
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="fire">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🧯</span> إطفائية</div>
+                    <div class="svcToggle"><input id="svc_fire" type="checkbox"></div>
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="compressor">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🧰</span> الضاغط</div>
+                    <div class="svcToggle"><input id="svc_compressor" type="checkbox"></div>
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="battery">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🔋</span> البطارية</div>
+                    <div class="svcToggle"><input id="svc_battery" type="checkbox"></div>
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="ac">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">❄</span> خدمة مكيف</div>
+                    <div class="svcToggle"><input id="svc_ac" type="checkbox"></div>
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="fresh">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">💧</span> مياه حلوة</div>
+                    <div class="svcToggle"><input id="svc_fresh_water" type="checkbox"></div>
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="salt">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🧂</span> مياه مالحة</div>
+                    <div class="svcToggle"><input id="svc_salt_water" type="checkbox"></div>
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="sadcup">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🧪</span> ساد كوب</div>
+                    <div class="svcToggle"><input id="svc_sad_cup" type="checkbox"></div>
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="beltStairsQty">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🪜</span> سلم القشاط (عدد)</div>
+                  </div>
+                  <div class="svcQtyRow">
+                    <span class="mini">أدخل العدد</span>
+                    <input id="svc_belt_stairs_qty" class="svcQty" type="number" min="0" placeholder="0">
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="paxStairsQty">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🪜</span> سلالم ركاب (عدد)</div>
+                  </div>
+                  <div class="svcQtyRow">
+                    <span class="mini">أدخل العدد</span>
+                    <input id="svc_stairs_qty" class="svcQty" type="number" min="0" placeholder="0">
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="cartsQty">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🧳</span> عربات (عدد)</div>
+                  </div>
+                  <div class="svcQtyRow">
+                    <span class="mini">أدخل العدد</span>
+                    <input id="svc_carts_qty" class="svcQty" type="number" min="0" placeholder="0">
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="chargeQty">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">⚡</span> شحن (عدد)</div>
+                  </div>
+                  <div class="svcQtyRow">
+                    <span class="mini">أدخل العدد</span>
+                    <input id="svc_charge_qty" class="svcQty" type="number" min="0" placeholder="0">
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="tractorQty">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🚜</span> جرار (عدد)</div>
+                  </div>
+                  <div class="svcQtyRow">
+                    <span class="mini">أدخل العدد</span>
+                    <input id="svc_tractor_qty" class="svcQty" type="number" min="0" placeholder="0">
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="pushback">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🛞</span> بوش باك</div>
+                    <div class="svcToggle"><input id="svc_pushback" type="checkbox"></div>
+                  </div>
+                </div>
+
+                <div class="svcCard" data-svc="loader">
+                  <div class="svcHead">
+                    <div class="svcName"><span class="svcIcon">🏗</span> لودر</div>
+                    <div class="svcToggle"><input id="svc_loader" type="checkbox"></div>
                   </div>
                 </div>
               </div>
 
-              <div>
-                <label class="label">الفئة</label>
-                <input id="flight_class" type="hidden" value="">
-                <div id="classSelect" class="select-wrap">
-                  <button id="class_btn" type="button" class="inp select-btn" aria-haspopup="listbox" aria-expanded="false">
-                    <span id="class_btn_text">اختر الفئة...</span>
-                    <span class="left-icons">
-                      <span class="plane">✈</span>
-                      <span class="chev"></span>
-                    </span>
-                  </button>
-
-                  <div id="class_menu" class="select-menu hidden" role="listbox" aria-label="قائمة الفئة">
-                    <input id="class_search" class="inp select-search" type="text" placeholder="بحث سريع...">
-                    <div id="class_list" class="select-list"></div>
-                    <div id="class_empty" class="select-empty hidden">لا يوجد نتائج</div>
+              <div class="mt-4 glass rounded-2xl p-3 border border-[color:var(--line)]">
+                <div class="text-[color:var(--gold)] font-bold mb-2">تشغيل الإنارة</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label class="label">المدة التشغيلية</label>
+                    <input id="light_duration" class="inp" type="text" placeholder="مثال: 25 دقيقة">
+                  </div>
+                  <div>
+                    <label class="label">رقم المهبط</label>
+                    <input id="light_stand" class="inp" type="text" placeholder="رقم المهبط">
                   </div>
                 </div>
               </div>
 
-              <div>
-                <label class="label">نوع الطائرة <span class="text-red-500 font-bold">*</span></label>
-                <input id="aircraft_type" type="hidden" value="">
-                <div id="aircraftSelect" class="select-wrap">
-                  <button id="aircraft_btn" type="button" class="inp select-btn" aria-haspopup="listbox" aria-expanded="false">
-                    <span id="aircraft_btn_text">اختر نوع الطائرة...</span>
-                    <span class="left-icons">
-                      <span class="plane">✈</span>
-                      <span class="chev"></span>
-                    </span>
-                  </button>
-
-                  <div id="aircraft_menu" class="select-menu hidden" role="listbox" aria-label="قائمة نوع الطائرة">
-                    <input id="aircraft_search" class="inp select-search" type="text" placeholder="بحث سريع...">
-                    <div id="aircraft_list" class="select-list"></div>
-                    <div id="aircraft_empty" class="select-empty hidden">لا يوجد نتائج</div>
-                  </div>
-                </div>
+              <div class="mt-3">
+                <label class="label">ملاحظات</label>
+                <textarea id="notes" class="ta" placeholder="أي ملاحظات إضافية..."></textarea>
               </div>
-
-              <div class="grid grid-cols-2 gap-2 sm:col-span-2">
-                <div>
-                  <label class="label">توقيت الوصول (تاريخ)</label>
-                  <input id="arr_date" class="inp" type="date">
-                </div>
-                <div>
-                  <label class="label">توقيت الوصول (وقت)</label>
-                  <input id="arr_time" class="inp" type="time">
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-2 sm:col-span-2">
-                <div>
-                  <label class="label">توقيت المغادرة (تاريخ)</label>
-                  <input id="dep_date" class="inp" type="date">
-                </div>
-                <div>
-                  <label class="label">توقيت المغادرة (وقت)</label>
-                  <input id="dep_time" class="inp" type="time">
-                </div>
-              </div>
-
-              <div class="sm:col-span-2">
-                <label class="label">مهبط الطائرة</label>
-                <div class="grid grid-cols-2 gap-2">
-                  <input id="stand_num" class="inp" type="text" placeholder="رقم الفنكر">
-                  <input id="gate_num" class="inp" type="text" placeholder="رقم البوابة">
-                </div>
-              </div>
-
-              <div class="sm:col-span-2">
-                <label class="label">رقم الرحلة</label>
-                <div class="grid grid-cols-2 gap-2">
-                  <input id="flight_arr" class="inp" type="text" placeholder="قدوم">
-                  <input id="flight_dep" class="inp" type="text" placeholder="مغادرة">
-                </div>
-              </div>
-
-              <div>
-                <label class="label">عدد الركاب القادمون</label>
-                <input id="pax_arr_count" class="inp" type="number" min="0" placeholder="0">
-              </div>
-
-              <div>
-                <label class="label">عدد الركاب المغادرون</label>
-                <input id="pax_dep_count" class="inp" type="number" min="0" placeholder="0">
-              </div>
-
-              <div>
-                <label class="label">وفود (عدد)</label>
-                <input id="delegations_count" class="inp" type="number" min="0" placeholder="0">
-              </div>
-
-              <div>
-                <label class="label">ركاب VIP (عدد)</label>
-                <input id="vip_pax" class="inp" type="number" min="0" placeholder="0">
-              </div>
-            </div>
-          </div>
-
-          <div class="section p-4 sm:p-5">
-            <div class="flex items-center justify-between gap-3 mb-3">
-              <div class="text-[color:var(--gold)] font-extrabold">الطواقم الموظفين + المفقودات</div>
-              <span class="mini">يمكن إضافة أكثر من اسم لكل بند</span>
-            </div>
-            <div class="divider mb-4"></div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-[color:var(--gold)] font-bold">موظف الحركة</div>
-                  <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('movement_staff')">+ إضافة</button>
-                </div>
-                <div id="movement_staff" class="space-y-2"></div>
-              </div>
-
-              <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-[color:var(--gold)] font-bold">عمال التحميل</div>
-                  <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('loading_staff')">+ إضافة</button>
-                </div>
-                <div id="loading_staff" class="space-y-2"></div>
-              </div>
-
-              <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-[color:var(--gold)] font-bold">ضيافة جوية</div>
-                  <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('food_staff')">+ إضافة</button>
-                </div>
-                <div id="food_staff" class="space-y-2"></div>
-              </div>
-
-              <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-[color:var(--gold)] font-bold">عمال الصيانة</div>
-                  <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('maintenance_staff')">+ إضافة</button>
-                </div>
-                <div id="maintenance_staff" class="space-y-2"></div>
-              </div>
-
-              <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-[color:var(--gold)] font-bold">عمال الكاترينغ</div>
-                  <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('catering_staff')">+ إضافة</button>
-                </div>
-                <div id="catering_staff" class="space-y-2"></div>
-              </div>
-
-              <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-[color:var(--gold)] font-bold">عمال السادكوب</div>
-                  <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('sadkoub_staff')">+ إضافة</button>
-                </div>
-                <div id="sadkoub_staff" class="space-y-2"></div>
-              </div>
-
-              <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-[color:var(--gold)] font-bold">عمال آليات</div>
-                  <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('vehicles_staff')">+ إضافة</button>
-                </div>
-                <div id="vehicles_staff" class="space-y-2"></div>
-              </div>
-
-              <div class="glass rounded-2xl p-3 border border-[color:var(--line)]">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="text-[color:var(--gold)] font-bold">عمال ترتيبات</div>
-                  <button class="btn btn-dark !py-2 !px-3 !rounded-xl text-xs" type="button" onclick="addPerson('arrangements_staff')">+ إضافة</button>
-                </div>
-                <div id="arrangements_staff" class="space-y-2"></div>
-              </div>
-            </div>
-
-            <div class="mt-3">
-              <label class="label">المفقودات التي وُجدت على الطائرة</label>
-              <textarea id="found_items" class="ta" placeholder="اكتب المفقودات إن وجدت..."></textarea>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
-              <div>
-                <label class="label">اسم المستلم</label>
-                <input id="receiver_name" class="inp" type="text" placeholder="اسم المستلم">
-              </div>
-            </div>
-          </div>
-
-          <div class="section p-4 sm:p-5">
-            <div class="flex items-center justify-between gap-3 mb-3">
-              <div class="text-[color:var(--gold)] font-extrabold">آليات الخدمة</div>
-              <span class="mini">اختر الموجود واملأ الأعداد عند الحاجة</span>
-            </div>
-            <div class="divider mb-4"></div>
-
-            <div id="svcGrid" class="svcGrid">
-              <div class="svcCard" data-svc="lift">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">⚙</span> رافعة</div>
-                  <div class="svcToggle"><input id="svc_lift" type="checkbox"></div>
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="catering">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🍽</span> كاترينغ</div>
-                  <div class="svcToggle"><input id="svc_catering1" type="checkbox"></div>
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="fire">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🧯</span> إطفائية</div>
-                  <div class="svcToggle"><input id="svc_fire" type="checkbox"></div>
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="compressor">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🧰</span> الضاغط</div>
-                  <div class="svcToggle"><input id="svc_compressor" type="checkbox"></div>
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="battery">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🔋</span> البطارية</div>
-                  <div class="svcToggle"><input id="svc_battery" type="checkbox"></div>
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="ac">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">❄</span> خدمة مكيف</div>
-                  <div class="svcToggle"><input id="svc_ac" type="checkbox"></div>
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="fresh">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">💧</span> مياه حلوة</div>
-                  <div class="svcToggle"><input id="svc_fresh_water" type="checkbox"></div>
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="salt">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🧂</span> مياه مالحة</div>
-                  <div class="svcToggle"><input id="svc_salt_water" type="checkbox"></div>
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="sadcup">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🧪</span> ساد كوب</div>
-                  <div class="svcToggle"><input id="svc_sad_cup" type="checkbox"></div>
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="beltStairsQty">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🪜</span> سلم القشاط (عدد)</div>
-                </div>
-                <div class="svcQtyRow">
-                  <span class="mini">أدخل العدد</span>
-                  <input id="svc_belt_stairs_qty" class="svcQty" type="number" min="0" placeholder="0">
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="paxStairsQty">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🪜</span> سلالم ركاب (عدد)</div>
-                </div>
-                <div class="svcQtyRow">
-                  <span class="mini">أدخل العدد</span>
-                  <input id="svc_stairs_qty" class="svcQty" type="number" min="0" placeholder="0">
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="cartsQty">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🧳</span> عربات (عدد)</div>
-                </div>
-                <div class="svcQtyRow">
-                  <span class="mini">أدخل العدد</span>
-                  <input id="svc_carts_qty" class="svcQty" type="number" min="0" placeholder="0">
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="chargeQty">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">⚡</span> شحن (عدد)</div>
-                </div>
-                <div class="svcQtyRow">
-                  <span class="mini">أدخل العدد</span>
-                  <input id="svc_charge_qty" class="svcQty" type="number" min="0" placeholder="0">
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="tractorQty">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🚜</span> جرار (عدد)</div>
-                </div>
-                <div class="svcQtyRow">
-                  <span class="mini">أدخل العدد</span>
-                  <input id="svc_tractor_qty" class="svcQty" type="number" min="0" placeholder="0">
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="pushback">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🛞</span> بوش باك</div>
-                  <div class="svcToggle"><input id="svc_pushback" type="checkbox"></div>
-                </div>
-              </div>
-
-              <div class="svcCard" data-svc="loader">
-                <div class="svcHead">
-                  <div class="svcName"><span class="svcIcon">🏗</span> لودر</div>
-                  <div class="svcToggle"><input id="svc_loader" type="checkbox"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-4 glass rounded-2xl p-3 border border-[color:var(--line)]">
-              <div class="text-[color:var(--gold)] font-bold mb-2">تشغيل الإنارة</div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label class="label">المدة التشغيلية</label>
-                  <input id="light_duration" class="inp" type="text" placeholder="مثال: 25 دقيقة">
-                </div>
-                <div>
-                  <label class="label">رقم المهبط</label>
-                  <input id="light_stand" class="inp" type="text" placeholder="رقم المهبط">
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-3">
-              <label class="label">ملاحظات</label>
-              <textarea id="notes" class="ta" placeholder="أي ملاحظات إضافية..."></textarea>
             </div>
           </div>
         </div>
@@ -1551,7 +1584,7 @@
           flightName = `Ramp_Report_${new Date().toISOString().slice(0,10)}`;
         }
 
-        flightName = flightName.replace(/[\/\\:*?"<>|\s]/g, '-');
+        flightName = flightName.replace(/[\/\:*?"<>|\s]/g, '-');
         const fileName = `${flightName}.pdf`;
 
         window.scrollTo(0, 0);
@@ -1820,7 +1853,7 @@
           flightName = `Ramp_Report_${new Date().toISOString().slice(0,10)}`;
         }
 
-        flightName = flightName.replace(/[\/\\:*?"<>|\s]/g, '-');
+        flightName = flightName.replace(/[\/\:*?"<>|\s]/g, '-');
         const fileName = `${flightName}.docx`;
         const fileForShare = new File([blob], fileName, { type: blob.type });
 
