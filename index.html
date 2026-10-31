@@ -556,8 +556,13 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label class="label">تقرير العنصر (اسم كاتب التقرير)</label>
-                  <input id="rep_writer" class="inp" type="text" placeholder="مثال: أحمد محمد">
+                  <label class="label">أسماء العناصر المتواجدة على الرحلة</label>
+                  <input id="rep_writer" class="inp" type="text" placeholder="مثال: أحمد، محمود...">
+                </div>
+                
+                <div>
+                  <label class="label">اسم المشرف</label>
+                  <input id="supervisor_name" class="inp" type="text" placeholder="اسم مشرف الرحلة">
                 </div>
                 
                 <!-- حقل الشركة المخدمة الجديد -->
@@ -647,7 +652,7 @@
                   <label class="label">مهبط الطائرة</label>
                   <div class="grid grid-cols-2 gap-2">
                     <input id="stand_num" class="inp" type="text" placeholder="رقم الفنكر">
-                    <input id="gate_num" class="inp" type="text" placeholder="رقم البوابة">
+                    <input id="gate_num" class="inp" type="text" placeholder="اسم المهبط (ساحات)">
                   </div>
                 </div>
 
@@ -656,6 +661,14 @@
                   <div class="grid grid-cols-2 gap-2">
                     <input id="flight_arr" class="inp" type="text" placeholder="قدوم">
                     <input id="flight_dep" class="inp" type="text" placeholder="مغادرة">
+                  </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                  <label class="label">وجهة الرحلة (قدوم / مغادرة)</label>
+                  <div class="grid grid-cols-2 gap-2">
+                    <input id="dest_arr" class="inp" type="text" placeholder="دولة / مدينة القدوم">
+                    <input id="dest_dep" class="inp" type="text" placeholder="دولة / مدينة المغادرة">
                   </div>
                 </div>
 
@@ -755,8 +768,8 @@
               </div>
 
               <div class="mt-3">
-                <label class="label">المفقودات التي وُجدت على الطائرة</label>
-                <textarea id="found_items" class="ta" placeholder="اكتب المفقودات إن وجدت..."></textarea>
+                <label class="label">المفقودات التي وُجدت على الطائرة <span class="text-red-500 font-bold">*</span></label>
+                <textarea id="found_items" class="ta" required placeholder="يرجى ذكر المواد المفقودة أو كتابة 'لا يوجد' (إجباري)"></textarea>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
@@ -1100,6 +1113,7 @@
     function gatherData(){
       return {
         rep_writer: document.getElementById('rep_writer').value.trim(),
+        supervisor_name: document.getElementById('supervisor_name').value.trim(),
         service_company: document.getElementById('service_company').value.trim(), // الحقل الجديد
         flight_class: document.getElementById('flight_class').value.trim(),
         aircraft_type: document.getElementById('aircraft_type').value.trim(),
@@ -1111,6 +1125,8 @@
         gate_num: document.getElementById('gate_num').value.trim(),
         flight_arr: document.getElementById('flight_arr').value.trim(),
         flight_dep: document.getElementById('flight_dep').value.trim(),
+        dest_arr: document.getElementById('dest_arr').value.trim(),
+        dest_dep: document.getElementById('dest_dep').value.trim(),
 
         pax_arr_count: n0('pax_arr_count'),
         pax_dep_count: n0('pax_dep_count'),
@@ -1419,7 +1435,10 @@
                 <div class="sub">تاريخ الإنشاء: <span class="pdfAutoFix" dir="auto">${escapeHtml(createdStr)}</span></div>
               </div>
             </div>
-            <div class="pdfBadge">كاتب التقرير <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.rep_writer))}</span></div>
+            <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+              <div class="pdfBadge">العناصر المتواجدة: <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.rep_writer))}</span></div>
+              <div class="pdfBadge">المشرف: <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.supervisor_name))}</span></div>
+            </div>
           </div>
 
           <div class="pdfGrid">
@@ -1448,9 +1467,13 @@
                   </tr>
                   <tr>
                     <td class="k">مهبط الطائرة</td>
-                    <td class="v">فنكر <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.stand_num))}</span> — بوابة <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.gate_num))}</span></td>
+                    <td class="v">فنكر <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.stand_num))}</span> — ساحة <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.gate_num))}</span></td>
                     <td class="k">رقم الرحلة</td>
                     <td class="v">قدوم <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.flight_arr))}</span> — مغادرة <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.flight_dep))}</span></td>
+                  </tr>
+                  <tr>
+                    <td class="k">وجهة الرحلة</td>
+                    <td class="v" colspan="3">قدوم من: <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.dest_arr))}</span> — مغادرة إلى: <span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.dest_dep))}</span></td>
                   </tr>
                 </table>
               </div>
@@ -1552,6 +1575,13 @@
         alert("يرجى الانتباه: بما أنك قمت بإدخال توقيت المغادرة (وقت)، فيجب عليك إدخال رقم رحلة المغادرة حتماً.");
         return false;
       }
+      
+      const foundItems = document.getElementById('found_items').value.trim();
+      if (!foundItems) {
+        alert("يرجى الانتباه: حقل المفقودات إجباري. يرجى ذكر المواد أو كتابة 'لا يوجد'.");
+        return false;
+      }
+
       return true;
     }
 
@@ -1759,11 +1789,12 @@
           rows: [
             rowTitle("بيانات الرحلة", 4),
             row2("الشركة المخدمة", d.service_company || "—", "نوع الطائرة", d.aircraft_type || "—"),
-            row2("كاتب التقرير", d.rep_writer || "—", "الفئة", d.flight_class || "—"),
+            row2("العناصر المتواجدة", d.rep_writer || "—", "الفئة", d.flight_class || "—"),
+            row2("اسم المشرف", d.supervisor_name || "—", "وجهة الرحلة", (d.dest_arr || "—") + " / " + (d.dest_dep || "—")),
             row2("الركاب (قادمون)", d.pax_arr_count.toString(), "الركاب (مغادرون)", d.pax_dep_count.toString()),
             row2("وفود", d.delegations_count.toString(), "ركاب VIP", d.vip_pax.toString()),
             row2("توقيت الوصول", `${d.arr_time || "—"} / ${d.arr_date || "—"}`, "توقيت المغادرة", `${d.dep_time || "—"} / ${d.dep_date || "—"}`),
-            row2("رقم الفنكر", d.stand_num || "—", "رقم البوابة", d.gate_num || "—"),
+            row2("رقم الفنكر", d.stand_num || "—", "اسم المهبط (ساحات)", d.gate_num || "—"),
             row2("رحلة قدوم", d.flight_arr || "—", "رحلة مغادرة", d.flight_dep || "—"),
           ],
         });
@@ -1877,7 +1908,7 @@
 
     function resetForm(){
       const idsToClear = [
-        'rep_writer','service_company','aircraft_type','flight_class','arr_time','arr_date','dep_time','dep_date',
+        'rep_writer','supervisor_name','dest_arr','dest_dep','service_company','aircraft_type','flight_class','arr_time','arr_date','dep_time','dep_date',
         'stand_num','gate_num','flight_arr','flight_dep','pax_arr_count','pax_dep_count',
         'delegations_count','vip_pax','found_items','receiver_name',
         'light_duration','light_stand','notes',
