@@ -125,6 +125,7 @@
       background: rgba(4,28,26,.55);
       color: var(--gold);
       border: 1px solid rgba(185,167,121,.45);
+      cursor: pointer;
     }
     .btn-dark:hover{ background: rgba(0,0,0,.25); }
 
@@ -767,10 +768,27 @@
                 </div>
               </div>
 
-              <div class="mt-3">
+              <!-- قسم المفقودات مع الكاميرا -->
+              <div class="mt-3 sm:col-span-2">
                 <label class="label">المفقودات التي وُجدت على الطائرة <span class="text-red-500 font-bold">*</span></label>
-                <textarea id="found_items" class="ta" required placeholder="يرجى ذكر المواد المفقودة أو كتابة 'لا يوجد' (إجباري)"></textarea>
+                <div class="flex flex-col sm:flex-row gap-4">
+                  <label class="btn btn-dark flex-1 text-center cursor-pointer m-0">
+                    <span id="photo_btn_text">📸 التقاط صورة للغرض</span>
+                    <!-- كود تشغيل الكاميرا من الجوال مباشرة -->
+                    <input type="file" accept="image/*" capture="environment" id="lost_item_photo" class="hidden" onchange="handlePhotoUpload(event)">
+                  </label>
+                  <label class="flex items-center gap-2 text-[color:var(--txt)] text-sm cursor-pointer p-2 bg-[rgba(4,28,26,.55)] border border-[rgba(143,179,173,.28)] rounded-xl flex-1 justify-center">
+                    <input type="checkbox" id="no_lost_items" class="w-5 h-5 accent-[color:var(--gold)]" onchange="handleNoItems(event)">
+                    لا يوجد مفقودات
+                  </label>
+                </div>
+                
+                <div id="photo_preview_container" class="hidden mt-3 text-center">
+                  <img id="photo_preview" class="w-32 h-32 object-cover border-2 border-[color:var(--gold)] rounded-xl mx-auto" src="" alt="preview">
+                  <button type="button" class="mt-2 btn btn-soft !py-1 !px-3 text-xs mx-auto" onclick="clearPhoto()">إزالة الصورة</button>
+                </div>
               </div>
+              <!-- نهاية قسم المفقودات -->
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
                 <div>
@@ -950,6 +968,40 @@
   <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 
   <script>
+    // ===== وظائف الكاميرا والمفقودات =====
+    let lostItemPhotoBase64 = "";
+
+    function handlePhotoUpload(e) {
+      const file = e.target.files[0];
+      if(!file) return;
+      
+      // إذا اختار صورة، نلغي تفعيل "لا يوجد مفقودات"
+      document.getElementById('no_lost_items').checked = false;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        lostItemPhotoBase64 = event.target.result;
+        document.getElementById('photo_preview').src = lostItemPhotoBase64;
+        document.getElementById('photo_preview_container').classList.remove('hidden');
+        document.getElementById('photo_btn_text').innerText = "📸 تغيير الصورة";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleNoItems(e) {
+      if(e.target.checked) {
+        clearPhoto();
+      }
+    }
+
+    function clearPhoto() {
+      lostItemPhotoBase64 = "";
+      document.getElementById('lost_item_photo').value = "";
+      document.getElementById('photo_preview_container').classList.add('hidden');
+      document.getElementById('photo_btn_text').innerText = "📸 التقاط صورة للغرض";
+    }
+    // ===================================
+
     // ===== Helpers =====
     function setTodayDefaults(){
       const today = new Date().toISOString().split('T')[0];
@@ -1114,7 +1166,7 @@
       return {
         rep_writer: document.getElementById('rep_writer').value.trim(),
         supervisor_name: document.getElementById('supervisor_name').value.trim(),
-        service_company: document.getElementById('service_company').value.trim(), // الحقل الجديد
+        service_company: document.getElementById('service_company').value.trim(), 
         flight_class: document.getElementById('flight_class').value.trim(),
         aircraft_type: document.getElementById('aircraft_type').value.trim(),
         arr_date: document.getElementById('arr_date').value,
@@ -1142,7 +1194,9 @@
         vehicles_staff: getPeople('vehicles_staff'),
         arrangements_staff: getPeople('arrangements_staff'),
 
-        found_items: document.getElementById('found_items').value.trim(),
+        lost_items_photo: lostItemPhotoBase64,
+        no_lost_items: document.getElementById('no_lost_items').checked,
+
         receiver_name: document.getElementById('receiver_name').value.trim(),
 
         services_chips: gatherServices(),
@@ -1424,6 +1478,14 @@
       const createdStr = new Date().toLocaleString('ar');
       const allChipsHtml = getCombinedChips(d).map(s => `<span class="pdfChip"><span class="pdfAutoFix" dir="auto">${escapeHtml(s)}</span></span>`).join("");
 
+      // تجهيز كود المفقودات HTML
+      let lostAndFoundHtml = "";
+      if(d.no_lost_items) {
+         lostAndFoundHtml = '<div class="pdfNotes"><span class="pdfAutoFix" dir="auto">لا يوجد مفقودات</span></div>';
+      } else if(d.lost_items_photo) {
+         lostAndFoundHtml = `<div style="margin-top:8px;"><img src="${d.lost_items_photo}" style="max-height: 200px; border-radius: 8px; border: 2px solid #cbd5e1;"></div>`;
+      }
+
       return `
         <div class="pdfPage">
           <div class="pdfHeader">
@@ -1511,7 +1573,7 @@
                 <div style="margin-top:20px;">
                   <div style="margin-bottom:14px;">
                     <div style="font-weight:900; color:#0f172a; font-size:14px; margin-bottom:6px;">المفقودات التي وُجدت على الطائرة</div>
-                    <div class="pdfNotes"><span class="pdfAutoFix" dir="auto">${escapeHtml(safeText(d.found_items))}</span></div>
+                    ${lostAndFoundHtml}
                   </div>
                   <table class="pdfTable">
                     <tr>
@@ -1541,24 +1603,21 @@
 
     // ===== التحقق وإلزامية الحقول =====
     function validateForm() {
-      const company = document.getElementById('service_company').value.trim(); // حقل الشركة
+      const company = document.getElementById('service_company').value.trim(); 
       const aircraft = document.getElementById('aircraft_type').value.trim();
       const flightArr = document.getElementById('flight_arr').value.trim();
       const arrTime = document.getElementById('arr_time').value.trim();
       const flightDep = document.getElementById('flight_dep').value.trim();
       const depTime = document.getElementById('dep_time').value.trim();
 
-      // التحقق من إلزامية الشركة المخدمة
       if (!company) {
         alert("يرجى الانتباه: خانة الشركة المخدمة إجبارية. يرجى اختيار الشركة المخدمة أولاً لتتمكن من تصدير التقرير.");
         return false;
       }
-      // التحقق من إلزامية نوع الطائرة
       if (!aircraft) {
         alert("يرجى الانتباه: خانة نوع الطائرة إجبارية. يرجى اختيار نوع الطائرة أولاً لتتمكن من تصدير التقرير.");
         return false;
       }
-      // شروط الترابط لأوقات الرحلات
       if (flightArr !== "" && arrTime === "") {
         alert("يرجى الانتباه: بما أنك قمت بإدخال رقم رحلة القدوم، فيجب عليك إدخال توقيت الوصول (وقت) حتماً.");
         return false;
@@ -1576,10 +1635,11 @@
         return false;
       }
       
-      const foundItems = document.getElementById('found_items').value.trim();
-      if (!foundItems) {
-        alert("يرجى الانتباه: حقل المفقودات إجباري. يرجى ذكر المواد أو كتابة 'لا يوجد'.");
-        return false;
+      // التحقق من قسم المفقودات
+      const noItems = document.getElementById('no_lost_items').checked;
+      if (!noItems && !lostItemPhotoBase64) {
+         alert("الرجاء التقاط صورة للغرض المفقود أو تحديد خيار 'لا يوجد مفقودات'.");
+         return false;
       }
 
       return true;
@@ -1822,6 +1882,32 @@
           ]
         });
 
+        // تحضير خلية المفقودات
+        let foundItemsChildren = [];
+        if (d.no_lost_items) {
+            foundItemsChildren = [p([run("لا يوجد مفقودات", {color:"111111"})])];
+        } else if (d.lost_items_photo) {
+            try {
+                const base64Data = d.lost_items_photo.split(',')[1];
+                const binaryString = window.atob(base64Data);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                foundItemsChildren = [
+                    new Paragraph({
+                        children: [new ImageRun({ data: bytes, transformation: { width: 200, height: 200 } })],
+                        alignment: AlignmentType.CENTER
+                    })
+                ];
+            } catch(e) {
+                foundItemsChildren = [p([run("صورة مرفقة", {color:"111111"})])];
+            }
+        } else {
+             foundItemsChildren = [p([run("—", {color:"111111"})])];
+        }
+
         const foundItemsTable = new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
           borders,
@@ -1830,7 +1916,7 @@
             new TableRow({
               children: [
                 cell([p([run("المفقودات التي وُجدت على الطائرة", {bold:true, color:"0B2F2A"})])], { width: 25, fill: "F6F2E8" }),
-                cell([p([run(d.found_items || "—", {color:"111111"})])], { width: 75 })
+                cell(foundItemsChildren, { width: 75 })
               ]
             }),
             new TableRow({
@@ -1910,7 +1996,7 @@
       const idsToClear = [
         'rep_writer','supervisor_name','dest_arr','dest_dep','service_company','aircraft_type','flight_class','arr_time','arr_date','dep_time','dep_date',
         'stand_num','gate_num','flight_arr','flight_dep','pax_arr_count','pax_dep_count',
-        'delegations_count','vip_pax','found_items','receiver_name',
+        'delegations_count','vip_pax','receiver_name',
         'light_duration','light_stand','notes',
         'svc_belt_stairs_qty','svc_stairs_qty','svc_carts_qty','svc_charge_qty','svc_tractor_qty'
       ];
@@ -1918,7 +2004,7 @@
 
       setAircraftType("");
       setClassType("");
-      setCompanyType(""); // تفريغ حقل الشركة الجديدة
+      setCompanyType(""); 
 
       [
         'svc_lift','svc_catering1','svc_compressor','svc_battery','svc_salt_water','svc_fresh_water',
@@ -1934,11 +2020,15 @@
 
       setTodayDefaults();
       applyServiceVisibility();
+
+      // تفريغ المفقودات
+      document.getElementById('no_lost_items').checked = false;
+      clearPhoto();
     }
 
     window.onload = function(){
       setTodayDefaults();
-      initCompanySelect(); // تشغيل قائمة الشركة
+      initCompanySelect(); 
       initAircraftSelect();
       initClassSelect();
       applyServiceVisibility();
