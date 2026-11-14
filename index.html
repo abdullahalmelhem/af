@@ -768,14 +768,14 @@
                 </div>
               </div>
 
-              <!-- قسم المفقودات مع الكاميرا -->
+              <!-- قسم المفقودات مع المعرض -->
               <div class="mt-3 sm:col-span-2">
                 <label class="label">المفقودات التي وُجدت على الطائرة <span class="text-red-500 font-bold">*</span></label>
                 <div class="flex flex-col sm:flex-row gap-4">
                   <label class="btn btn-dark flex-1 text-center cursor-pointer m-0">
-                    <span id="photo_btn_text">📸 التقاط صورة للغرض</span>
-                    <!-- كود تشغيل الكاميرا من الجوال مباشرة -->
-                    <input type="file" accept="image/*" capture="environment" id="lost_item_photo" class="hidden" onchange="handlePhotoUpload(event)">
+                    <span id="photo_btn_text">🖼️ اختيار صورة من المعرض</span>
+                    <!-- كود فتح المعرض لاختيار صورة -->
+                    <input type="file" accept="image/*" id="lost_item_photo" class="hidden" onchange="handlePhotoUpload(event)">
                   </label>
                   <label class="flex items-center gap-2 text-[color:var(--txt)] text-sm cursor-pointer p-2 bg-[rgba(4,28,26,.55)] border border-[rgba(143,179,173,.28)] rounded-xl flex-1 justify-center">
                     <input type="checkbox" id="no_lost_items" class="w-5 h-5 accent-[color:var(--gold)]" onchange="handleNoItems(event)">
@@ -968,7 +968,7 @@
   <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 
   <script>
-    // ===== وظائف الكاميرا والمفقودات =====
+    // ===== وظائف المعرض والمفقودات =====
     let lostItemPhotoBase64 = "";
 
     function handlePhotoUpload(e) {
@@ -983,7 +983,7 @@
         lostItemPhotoBase64 = event.target.result;
         document.getElementById('photo_preview').src = lostItemPhotoBase64;
         document.getElementById('photo_preview_container').classList.remove('hidden');
-        document.getElementById('photo_btn_text').innerText = "📸 تغيير الصورة";
+        document.getElementById('photo_btn_text').innerText = "🖼️ تغيير الصورة";
       };
       reader.readAsDataURL(file);
     }
@@ -998,7 +998,7 @@
       lostItemPhotoBase64 = "";
       document.getElementById('lost_item_photo').value = "";
       document.getElementById('photo_preview_container').classList.add('hidden');
-      document.getElementById('photo_btn_text').innerText = "📸 التقاط صورة للغرض";
+      document.getElementById('photo_btn_text').innerText = "🖼️ اختيار صورة من المعرض";
     }
     // ===================================
 
@@ -1638,7 +1638,7 @@
       // التحقق من قسم المفقودات
       const noItems = document.getElementById('no_lost_items').checked;
       if (!noItems && !lostItemPhotoBase64) {
-         alert("الرجاء التقاط صورة للغرض المفقود أو تحديد خيار 'لا يوجد مفقودات'.");
+         alert("الرجاء اختيار صورة للغرض المفقود أو تحديد خيار 'لا يوجد مفقودات'.");
          return false;
       }
 
